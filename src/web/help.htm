@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Help</title>
+<style type="text/css">
+.style1 {
+    border: 1px solid #000000;
+}
+.style2 {
+    border-style: solid;
+    border-width: 1px;
+}
+.style3 {
+    border: 1px solid #000000;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+help:
+<br/>
+<table class="style2" cellspacing="1">
+    <tr>
+        <td class="style1" rowspan="7">target</td>
+        <td class="style1">add</td>
+        <td class="style1" colspan="2">name ip port portal</td>
+    </tr>
+    <tr>
+        <td class="style1">addaddress</td>
+        <td class="style1" colspan="2">name ip port</td>
+    </tr>
+    <tr>
+        <td class="style1">deladdress</td>
+        <td class="style1" colspan="2">name ip port</td>
+    </tr>
+    <tr>
+        <td class="style1">stop</td>
+        <td class="style1" colspan="2">name</td>
+    </tr>
+    <tr>
+        <td class="style1">delete</td>
+        <td class="style1" colspan="2">name</td>
+    </tr>
+    <tr>
+        <td class="style1">rename</td>
+        <td class="style1" colspan="2">old-name new-name</td>
+    </tr>
+    <tr>
+        <td class="style1">ls</td>
+        <td class="style1" colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="style1" rowspan="5">host</td>
+        <td class="style1">add</td>
+        <td class="style1" colspan="2">target_name host_name [target_password] 
+        [initiator_password]</td>
+    </tr>
+    <tr>
+        <td class="style1">delete</td>
+        <td class="style1" colspan="2">target_name host_name</td>
+    </tr>
+    <tr>
+        <td class="style1">setpassword</td>
+        <td class="style1" colspan="2">target_name host_name [target_password] 
+            [initiator_password]</td>
+    </tr>
+    <tr>
+        <td class="style1">rename</td>
+        <td class="style1" colspan="2">target_name old_name new_name</td>
+    </tr>
+    <tr>
+        <td class="style1">ls</td>
+        <td class="style1" colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="style1" rowspan="6">lun</td>
+        <td class="style1">adddisk</td>
+        <td class="style1" colspan="2">target_name host_name lun_id capability path</td>
+    </tr>
+    <tr>
+        <td class="style1">addtape</td>
+        <td class="style1" colspan="2">target_name host_name lun_id capability path</td>
+    </tr>
+    <tr>
+        <td class="style1">adddevice</td>
+        <td class="style1" colspan="2">target_name host_name lun_id type path</td>
+    </tr>
+    <tr>
+        <td class="style1">delete</td>
+        <td class="style1" colspan="2">target_name host_name lun_id</td>
+    </tr>
+    <tr>
+        <td class="style1">protect</td>
+        <td class="style1" colspan="2">target_name host_name lun_id</td>
+    </tr>
+    <tr>
+        <td class="style1">ls</td>
+        <td class="style1" colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="style1" rowspan="2">session</td>
+        <td class="style1">delete</td>
+        <td class="style1" colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="style1">ls</td>
+        <td class="style1" colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="style1" rowspan="2">connect</td>
+        <td class="style1">delete</td>
+        <td class="style1" colspan="2"><span lang="zh-cn">target_name host_name 
+		session_id connect_id</span></td>
+    </tr>
+    <tr>
+        <td class="style1">ls</td>
+        <td class="style1" colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="style1" rowspan="2">debug</td>
+        <td class="style1">level</td>
+        <td class="style1" colspan="2">value (0-6)</td>
+    </tr>
+    <tr>
+        <td class="style1">ls</td>
+        <td class="style1" colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="style1" rowspan="32">simulator&nbsp;</td>
+        <td class="style1">add</td>
+        <td class="style1" colspan="2">test_case_id logical_block_address sector_number count 
+        start_count interval_count</td>
+    </tr>
+    <tr>
+        <td class="style1">delete</td>
+        <td class="style1" colspan="2">unsupported</td>
+    </tr>
+    <tr>
+        <td class="style1">clear</td>
+        <td class="style1" colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="style1">ls</td>
+        <td class="style1" colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="style1" rowspan="28">&nbsp;</td>
+        <td class="style3" >Test case ID</td>
+        <td class="style3" >Test case description</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x01</td>
+        <td class="style1" >Correctable read, transient</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x02</td>
+        <td class="style1" >Correctable read, sticky</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x03</td>
+        <td class="style1" >Uncorrectable read, transient</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x04</td>
+        <td class="style1" >Uncorrectable read, sticky</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x05</td>
+        <td class="style1" >Correctable write, transient</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x06</td>
+        <td class="style1" >Correctable write, sticky</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x07</td>
+        <td class="style1" >Uncorrectable write, transient</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x08</td>
+        <td class="style1" >Uncorrectable write, sticky</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x09</td>
+        <td class="style1" >Hardware error, transient</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x0A</td>
+        <td class="style1" >Illegal command, transient</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x0B</td>
+        <td class="style1" >Disk hang on read</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x0C</td>
+        <td class="style1" >Disk hang on write</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x0D</td>
+        <td class="style1" >Disk hang, not on a command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x0E</td>
+        <td class="style1" >Power failure during command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x0F</td>
+        <td class="style1" >Physical removal of active disk</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x10</td>
+        <td class="style1" >Request timeout, transient</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x11</td>
+        <td class="style1" >Request timeout, sticky</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x19</td>
+        <td class="style1" >SCSI reassign blocks command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x1A</td>
+        <td class="style1" >SCSI read6 command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x1C</td>
+        <td class="style1" >SCSI write6 command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x3A</td>
+        <td class="style1" >SCSI read10 command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x3C</td>
+        <td class="style1" >SCSI write10 command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x41</td>
+        <td class="style1" >SCSI verify command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0xBA</td>
+        <td class="style1" >SCSI read12 command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0xBC</td>
+        <td class="style1" >SCSI write12 command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x9A</td>
+        <td class="style1" >SCSI read16 command</td>
+    </tr>
+    <tr>
+        <td class="style1" >0x9C</td>
+        <td class="style1" >SCSI write16 command</td>
+    </tr>
+    </table>
+    <p><a href="/">back</a></p>
+</body>
+</html>

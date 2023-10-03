@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<root>
+    <!-- configure target console -->
+    <console ip="" port="3260" debug_level="2" />
+
+    <!-- configure the first target -->
+    <target name="iqn.2006-11.1.python.iscsi.target-1" ip="127.0.0.1" port="3260" portal="1">
+        <!-- the first iqn of this target configured for disk array -->
+        <host name="iqn.1991-05.com.microsoft:desktop-uccoovt" target_pwd="" initiator_pwd="">
+            <lun id="0" type="0" path="Disk-1" capacity="102400" />
+            <lun id="1" type="0" path="Disk-2" capacity="102400" />
+        </host>
+
+
+	    <!-- negotiation parameter for this target -->
+	    <item key="MaxConnections" value="8" />
+	    <item key="InitialR2T" value="Yes" />
+	    <item key="ImmediateData" value="Yes" />
+	    <item key="FirstBurstLength" value="65536" />
+	    <item key="MaxBurstLength" value="262144" />
+	    <item key="DefaultTime2Wait" value="2" />    
+	    <item key="DefaultTime2Retain" value="20" />        
+	    <item key="MaxOutstandingR2T" value="16" />  
+	    <item key="DataPDUInOrder" value="Yes" />  
+	    <item key="DataSequenceInOrder" value="Yes" />     
+	    <item key="ErrorRecoveryLevel" value="2" />
+	    <item key="MaxRecvDataSegmentLength" value="65536" />
+    </target>
+
+    
+    <!-- configure isns client -->
+    <isns enable="No" isns_server_ip="127.0.0.1" isns_server_port="3205" isns_client_port="6006">
+		<isns_target name="iqn.2006-11.1.python.iscsi.target-1" dd="dd" />
+    </isns>
+</root>

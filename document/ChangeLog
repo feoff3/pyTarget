@@ -1,0 +1,123 @@
+
+This file is part of pyTarget.
+Copyright 2009-2010 Wu.Qing-xiu Wu.QX@hotmail.com
+
+The pyTarget is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License (either version
+2.1 of the License, or, at your option, any later version) and the GNU 
+General Public License as published by the Free Software Foundation. See
+the GNU Lesser General Public License for more details.
+
+##############################################################################
+ pyTarget-1.5.7.1:
+------------------------------------------------------------------------------
+    2011-4-1:
+        Add Joshua's patch for isns:
+        1) It adds a DevAttrQry() method to iSNSClient() to send the DevAttrQry request.
+        2) Fix Task() method.
+
+ pyTarget-1.5.7:
+------------------------------------------------------------------------------
+    2010-12-14:
+        1. Fix text request negotiation.
+        2. Fix some lock bug.
+        3. Add Data-out data_sn check, etc
+
+ pyTarget-1.5.6:
+------------------------------------------------------------------------------
+    2010-11-21:
+        1. Modify file lock.
+        2. Change some codes.
+
+ pyTarget-1.5.4:
+------------------------------------------------------------------------------
+    2010-06-20:
+        1. Add isns(scn, esi).
+        2. Fix recovery r2t bug.
+
+ pyTarget-1.5.3:
+------------------------------------------------------------------------------
+    2010-05-14:
+        1. Fix iscsi scsi cmd_sn out of range.
+        2. Add protect scsi device.
+
+ pyTarget-1.5.2:
+------------------------------------------------------------------------------
+    2010-05-10:
+        1. Fix some iscsi tape bugs.
+
+ pyTarget-1.5.1:
+------------------------------------------------------------------------------
+    2010-04-12:
+        1. add virtual tape library module.
+        2. add VTL-driver for windows
+        3. add iscsi initiator
+        4. fix somes iscsi/scsi bugs
+
+ pyTarget-1.0.6:
+------------------------------------------------------------------------------
+    2010-02-11:
+        1. add snack data/r2t/data_ack/r_data.
+        2. add all kinds of task management function.
+        3. add iscsi error recover(ERL=2).
+           support within command error recovery(e.g. digest error)
+           support within connection error recovery(e.g. command retry)
+           support connection recovery(e.g. task reassign)
+           support session recovery
+
+pyTarget-1.0.2:
+------------------------------------------------------------------------------
+    2009-11-27:
+        1. add webui
+        2. fix some iscsi compatible issues.
+        3. support ses protocol.
+        4. support scsi simulator.
+
+pyTarget-0.16.0:
+------------------------------------------------------------------------------
+    2009-10-27:
+        1. add cdb6, cdb10, cdb12, cdb16 SCSI command into scsi_lib
+        2. add scsi error simulator for simulating scsi test
+        3. add disk plist & glist into lun,
+           support scsi reassign_blocks & read_defect_list scsi command.
+
+pyTarget-0.15.0:
+------------------------------------------------------------------------------
+    2009-10-15:
+        1. add initiator and target mutual chap
+        2. fix InitiatorName and TargetName check while login phase
+        3. main.py renamed pyTarget.py
+        3. build all in one packed for windows
+    2009-10-17:
+        1. lun add lock for multi-connect
+        2. modify cmd_cache for write cmd
+
+pyTarget-0.13.1:
+------------------------------------------------------------------------------
+    2009-10-1:
+        1. Add negotiation parameter into xml config file
+        2. Fix Lun open flags
+
+pyTarget-0.13:
+------------------------------------------------------------------------------
+    2009-9-28:
+        1. Support scsi cdb 16 command
+        2. Modify debug API
+        3. Support multi-R2T solicited request.
+        4. Simplified config.xml file
+        5. Modify solicited data and unsolicited data.
+       
+    2009-9-29:
+        1. Add command cache for multi-I/O
+        2. Support mult-command
+        3. Update Write/Read command
+
+pyTarget-0.1:
+------------------------------------------------------------------------------
+    first version:
+    1. Spuuort multi-target
+    2. Support multi-session
+    3. Support multi-connect/session (MC/s)
+    4. Add CHAP (only support md5 chap)
+    5. Support header & data digest
+    6. Support ErrorRecoveryLevel = 0
