@@ -54,9 +54,11 @@ class Disk(Lun):
         if force or self.dev.size() < (long(self.capacity) << BLOCK_SHIFT):
             #TODO: now it works for files, fix that for non-expandable devices
             buf = '\x00' * BLOCK_SIZE
-            for i in range(0, self.capacity + 1):
+            i = long(0)
+            while i < self.capacity + 1:
                 if self.dev.write(long(i) << BLOCK_SHIFT, buf) == False: 
                     return False
+                i = i + 1
         DBG_PRN('Disk(%s)' % self.path, ': initialize finish!')
         return True
 

@@ -8,6 +8,7 @@ https://sourceforge.net/projects/pytarget/
 ## Additional features compared to original:
 - Ability to use physical disks as data source
 - Ability to use volumes (with emulated GPT) as data source
+- 2TB+ disks support
 
 ## Prerequisites
 - Python 2.7.10

@@ -162,3 +162,5 @@ cython_debug/
 
 # MSVS
 .vs/
+src/Disk-1
+src/Disk-2

@@ -165,7 +165,7 @@ def IS_WRITE(code):
 def IS_IN_IOCMD(code):
     __list = (REPORT_LUNS, INQUIRY, READ_CAPACITY, MODE_SENSE,
               READ_DEFECT_DATA, RECEIVE_DIAGNOSTIC,
-              READ_BLOCK_LIMITS, READ_POSITION, REQUEST_SENSE)
+              READ_BLOCK_LIMITS, READ_POSITION, REQUEST_SENSE, SERVICE_ACTION_IN)
     return IS_READ(code) or (code in __list)
 
 # data out commands
@@ -371,9 +371,23 @@ def __ReadCapacityRsp(cmd):
     '''
     cmd.status = SAM_STAT_GOOD
     if cmd.check_lun(TYPE_DISK):
-        cmd.out_buf = u32_buf(cmd.lun.capacity - 1)
+        if (cmd.lun.capacity > 0xffffffff):
+            cmd.out_buf = u32_buf(0xffffffff)
+        else:
+            cmd.out_buf = u32_buf(cmd.lun.capacity - 1)
         cmd.out_buf += u32_buf(BLOCK_SIZE)
 
+def __ReadCapacity16Rsp(cmd):
+    '''
+    scsi read capacity response
+    '''
+    cmd.status = SAM_STAT_GOOD
+    bytes_expected = cmd.cdb[13]
+    if cmd.check_lun(TYPE_DISK):
+        cmd.out_buf = u64_buf(cmd.lun.capacity - 1)
+        cmd.out_buf += u32_buf(BLOCK_SIZE)
+        if bytes_expected > 12:
+            cmd.out_buf += bytearray(bytes_expected - 12)
 
 #=======================================================
 #                Read Block Limits
@@ -898,8 +912,13 @@ def __ServiceActionInRsp(cmd):
     '''
     service action in
     '''
+    service_action_code = cmd.cdb[1]
+    if service_action_code == SAI_READ_CAPACITY_16:
+        __ReadCapacity16Rsp(cmd)
+        return
     cmd.status = SAM_STAT_GOOD
     cmd.check_lun(None)
+
 
 #=======================================================
 #                        Erase 
