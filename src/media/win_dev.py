@@ -148,7 +148,7 @@ class WinDev():
         '''
         try:
             win32file.SetFilePointer(self.handle, offset, win32con.FILE_BEGIN)
-            (rc , buf) = win32file.ReadFile(self.__hfile,length,None)
+            (rc , buf) = win32file.ReadFile(self.handle,length,None)
             if len(buf) != length or rc != 0:
                 DBG_WRN('file (%s) read FAILED(offset=%d, length=%d) win32 error code = %d' % (self.path, offset, length, rc))
                 buf = None
