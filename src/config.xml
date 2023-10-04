@@ -7,12 +7,12 @@
     <target name="iqn.2006-11.1.python.iscsi.target-1" ip="127.0.0.1" port="3260" portal="1">
         <!-- the first iqn of this target configured for disk array -->
         <host name="iqn.1991-05.com.microsoft:desktop-uccoovt" target_pwd="" initiator_pwd="">
-            <lun id="0" type="0" path="\\.\PhysicalDrive2" capacity="6442450944" media="0x1000"/>
+            <lun id="0" type="0" path="\\.\PhysicalDrive2" capacity="50944" media="0x1000"/>
         </host>
 
       <host name="iqn.000-05.com.microsoft:desktop-uccoovt" target_pwd="" initiator_pwd="">
-        <lun id="0" type="0" path="Disk-1" capacity="10240000" />
-        <lun id="1" type="0" path="Disk-2" capacity="10240000" />
+        <lun id="0" type="0" path="Disk-1" capacity="102400" media="0x0"/>
+        <lun id="1" type="0" path="Disk-2" capacity="102400" media="0x0"/>
       </host>
 
 

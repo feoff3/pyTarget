@@ -16,6 +16,8 @@ import winioctlcon
 import struct
 import ntsecuritycon
 
+import traceback
+
 class WinDev():
     '''
         windows device (disk,volume,partition) for device.
@@ -49,11 +51,11 @@ class WinDev():
         if self.handle:
             return True
         try:
-            secur_att = win32security.SECURITY_ATTRIBUTES()
-            secur_att.Initialize()
-            self.handle = win32file.CreateFile( self.path , win32con.GENERIC_READ|  win32con.GENERIC_WRITE | ntsecuritycon.FILE_READ_ATTRIBUTES | ntsecuritycon.FILE_WRITE_ATTRIBUTES, win32con. FILE_SHARE_READ|win32con.FILE_SHARE_WRITE, secur_att,   win32con.OPEN_ALWAYS, win32con.FILE_ATTRIBUTE_NORMAL , 0 )
+            self.handle = win32file.CreateFile( self.path , ntsecuritycon.GENERIC_READ|  ntsecuritycon.FILE_WRITE_DATA, win32con.FILE_SHARE_READ|win32con.FILE_SHARE_WRITE, None,   win32con.OPEN_EXISTING, win32con.FILE_FLAG_NO_BUFFERING , 0 )
+            return True
         except:
             DBG_WRN('open device %s FAILED' % self.path)
+            DBG_EXC()
         return False
 
 
@@ -62,8 +64,10 @@ class WinDev():
         close file
         '''
         if self.handle:
-            win32api.CloseHandle(self.handle)
             self.dev_unlock()
+            win32api.CloseHandle(self.handle)
+            self.handle = None
+
 
     def dev_lock(self):
         '''

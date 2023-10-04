@@ -37,7 +37,7 @@ class TIO():
         self.sen_info = info
 
 
-class Lun(object):
+class Lun():
     '''
     Class for virtual scsi lun device
     '''
@@ -156,3 +156,15 @@ class Lun(object):
         Test case list unlock
         '''
         self.__tc_lock.release()
+
+    def __del__(self):
+        if self.dev:
+            self.dev.close()
+
+    def lock(self):
+        if self.dev:
+            self.dev.lock()
+    
+    def unlock(self):
+        if self.dev:
+            self.dev.unlock()

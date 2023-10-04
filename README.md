@@ -11,4 +11,7 @@ https://sourceforge.net/projects/pytarget/
 
 ## Prerequisites
 - Python 2.7.10
-- For Windows, install `pywin32` module, e.g. `C:\Python27\python -m pip install pywin32`
+
+### Windows only
+- Install `pywin32` module, e.g. `C:\Python27\python -m pip install pywin32`
+- To access physical disks and volumes, pyTarget must be run as admin

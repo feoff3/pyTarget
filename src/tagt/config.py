@@ -118,6 +118,7 @@ class Config(xml.sax.handler.ContentHandler):
             self.__h.pwd_t = asc(attributes['target_pwd'])
             self.__h.pwd_i = asc(attributes['initiator_pwd'])
         elif name == 'lun':
+            self.__l = _Lun()
             self.__l.id = str_2_value(asc(attributes['id']))
             self.__l.path = asc(attributes['path'])
             self.__l.cap = str_2_value(asc(attributes['capacity']))
