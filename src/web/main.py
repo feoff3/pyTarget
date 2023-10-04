@@ -151,6 +151,7 @@ class WebServer(BaseHTTPRequestHandler):
 
 def WebService(isStop = None):
     try:
+        #TODO: make port and the use of web server configurable
         server = HTTPServer(('', 80), WebServer)
         server.serve_forever()
     except KeyboardInterrupt:

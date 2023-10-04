@@ -62,6 +62,8 @@ class _Lun():
         self.path = ''
         self.cap = 0
         self.type = 0
+        self.media = 0
+        self.parms = ''
         
 class _iSNS():
     '''
@@ -120,6 +122,10 @@ class Config(xml.sax.handler.ContentHandler):
             self.__l.path = asc(attributes['path'])
             self.__l.cap = str_2_value(asc(attributes['capacity']))
             self.__l.type = str_2_value(asc(attributes['type']))
+            if attributes.has_key('media'):
+                self.__l.media = str_2_value(asc(attributes['media']))
+            if attributes.has_key('parms'):
+                self.__l.parms = asc(attributes['parms'])
             self.__h.lun.append(copy.deepcopy(self.__l))
         elif name == 'item':
             key = asc(attributes['key'])

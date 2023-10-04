@@ -74,13 +74,13 @@ class Enclosure(Lun):
     Class for virtual scsi enclosure device
     '''
 
-    def __init__(self, id, path, descriptor=DEFAULT_ENCLOSURE_DESCRIPTOR):
+    def __init__(self, id, dev, descriptor=DEFAULT_ENCLOSURE_DESCRIPTOR):
         '''
         initialize scsi enclosure device
         @param id: device id
-        @param path: virtual device file path in fs
+        @param path: virtual device DevObj
         '''
-        Lun.__init__(self, id, TYPE_ENCLOSURE, path)
+        Lun.__init__(self, id, TYPE_ENCLOSURE, dev)
         # enclosure attribute
         self.enclosure_id = 0                                       # enclosure id
         self.local_id = [0] * 8                                     # local id

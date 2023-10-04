@@ -235,7 +235,6 @@ TYPE_PROTECT_MASK                        = 0x80
 TYPE_PROTECT_DISK                        = TYPE_PROTECT_MASK | TYPE_DISK
 TYPE_PROTECT_TAPE                        = TYPE_PROTECT_MASK | TYPE_TAPE
 
-
 #
 # SCSI protocols; these are taken from SPC-3 section 7.5
 #

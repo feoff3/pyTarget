@@ -14,14 +14,14 @@ class Disk(Lun):
     Class for virtual scsi disk device
     '''
 
-    def __init__(self, id, cap, path):
+    def __init__(self, id, cap, dev):
         '''
         initialize scsi disk device
         @param id: device id
         @param cap: device capacity
-        @param path: virtual device file path in fs
+        @param dev: virtual device object DevFile
         '''
-        Lun.__init__(self, id, TYPE_DISK, path)
+        Lun.__init__(self, id, TYPE_DISK, dev)
         self.capacity = cap
         self.__defect_list_init()
 
@@ -51,10 +51,11 @@ class Disk(Lun):
         @param force: force to initialize disk
         @return: True for success, False for failed
         '''
-        if force or self.size() < (long(self.capacity) << BLOCK_SHIFT):
+        if force or self.dev.size() < (long(self.capacity) << BLOCK_SHIFT):
+            #TODO: now it works for files, fix that for non-expandable devices
             buf = '\x00' * BLOCK_SIZE
             for i in range(0, self.capacity + 1):
-                if self.write(long(i) << BLOCK_SHIFT, buf) == False: 
+                if self.dev.write(long(i) << BLOCK_SHIFT, buf) == False: 
                     return False
         DBG_PRN('Disk(%s)' % self.path, ': initialize finish!')
         return True
@@ -80,7 +81,7 @@ class Disk(Lun):
             ret = False
         else:
             self.lock()
-            ret = self.write(long(lba) << BLOCK_SHIFT, buf)
+            ret = self.dev.write(long(lba) << BLOCK_SHIFT, buf)
             self.unlock()
             if not ret:
                 tio.set_sense(MEDIUM_ERROR, 0x0C00)
@@ -101,7 +102,7 @@ class Disk(Lun):
             DBG_WRN('disk(%s) read FAILED, overflow(offset=%d, length=%d, cap=%d)' % (self.path, lba, nr, self.capacity))
             return False
         self.lock()
-        tio.buffer = self.read(long(lba) << BLOCK_SHIFT, nr<<BLOCK_SHIFT)
+        tio.buffer = self.dev.read(long(lba) << BLOCK_SHIFT, nr<<BLOCK_SHIFT)
         if not tio.buffer:
             tio.set_sense(MEDIUM_ERROR, 0x1100)
             DBG_WRN('disk(%s) read FAILED(offset=%d, length=%d, cap=%d)' % (self.path, lba, nr, self.capacity))

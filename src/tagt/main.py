@@ -18,11 +18,54 @@ from scsi import scsi_proto as sp
 from scsi.scsi_enclosure import NEW_Enclosure
 from config import read_config
 from comm.debug import *
+from comm.dev_file import DevFile
+import platform
+
+# for media type mask (changes the behaviour of shared media)
+# TODO: move to media.factory file
+SOURCE_MEDIA_FILE                        = 0x0 
+SOURCE_MEDIA_WINDEV_MASK                 = 0xF000
+SOURCE_MEDIA_WINDRIVE                    = 0x1000
+SOURCE_MEDIA_WINVOL                      = 0x2000
+SOURCE_MEDIA_WINVOL_EMULATED_DISK_LAYOUT = 0x4000
 
 #
 # target pool
 #
 TM = TargetPool()
+
+#
+# returns DevFile object based on target media
+# and lun xml description
+#
+def _create_target_media(l):
+    windev = None
+    if (l.media & SOURCE_MEDIA_WINDEV_MASK) > 0:
+        if platform.system() == "Windows":
+            import media.win_dev
+            windev = media.win_dev.WinDev(l.path , l.media == SOURCE_MEDIA_WINDRIVE)
+            if l.media == SOURCE_MEDIA_WINVOL_EMULATED_DISK_LAYOUT:
+                import media.emulated_layout_dev
+                #TODO: check parms format, return error
+                filenames = l.parms.split(';')
+                #TODO: check files are initialized
+                header = DevFile(os.path.join(dir, filenames[0]))
+                footer = DevFile(os.path.join(dir, filenames[1]))
+                emulated_gpt = media.emulated_layout_dev.EmulatedLayoutDev(windev, header, footer)
+                windev = emulated_gpt
+        else:
+            DBG_WRN('Windows device type specified for non-Windows system')
+    if windev:
+        d = windev
+    else:
+        d = DevFile(l.path) # generic file media
+    d.dev_lock()
+    tp = l.type & (~sp.TYPE_PROTECT_MASK)
+    if tp == sp.TYPE_DISK:  ln = Disk(l.id, l.cap, d)
+    elif tp == sp.TYPE_TAPE:    ln = Tape(l.id, l.cap, d)
+    elif tp == sp.TYPE_ENCLOSURE:   ln = NEW_Enclosure(l.id, d)
+    else:ln = Lun(l.id, l.type, d)
+    return ln
 
 #
 # config target
@@ -47,11 +90,7 @@ def read_target_config(config):
             
             # scan host's lun
             for l in h.lun:
-                tp = l.type & (~sp.TYPE_PROTECT_MASK)
-                if tp == sp.TYPE_DISK:  ln = Disk(l.id, l.cap, l.path)
-                elif tp == sp.TYPE_TAPE:    ln = Tape(l.id, l.cap, l.path)
-                elif tp == sp.TYPE_ENCLOSURE:   ln = NEW_Enclosure(l.id, l.path)
-                else:ln = Lun(l.id, l.type, l.path)
+                ln = _create_target_media(l)
                 ln.initial()
                 ht.add_lun(ln)
                 # protect type

@@ -260,17 +260,18 @@ class Tape(Lun):
     class for scsi tape
     '''
 
-    def __init__(self, id, cap, path):
+    def __init__(self, id, cap, dev):
         '''
         Initialize scsi tape
         @param id: scsi lun id
         @param cap: tape capacity (align in block)
-        @param path: tape file path
+        @param dev: tape file DevFile
         '''
-        Lun.__init__(self, id, TYPE_TAPE, path)
+        Lun.__init__(self, id, TYPE_TAPE, dev)
         self.capacity = cap << BLOCK_SHIFT          # tape capacity in bytes
-        self.filemark = FileMark(path)              # tape filemark list
-        self.block = Block(path)                    # tape block list
+        # Note: only works with original "DevFile" devices
+        self.filemark = FileMark(dev.path)              # tape filemark list
+        self.block = Block(dev.path)                    # tape block list
         self.block_size = TAPE_BLOCK_SIZE           # tape block size
 
     def initial(self):

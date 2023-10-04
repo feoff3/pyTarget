@@ -60,6 +60,17 @@ class DevFile():
             self.fd.close()
             self.fd = None
 
+    def dev_lock(self):
+        '''
+         locks file (not impl, it is always locked in Windows)
+        '''
+        return True
+
+    def dev_unlock(self):
+        '''
+         unlocks the file (not impl)
+        '''
+        return False
 
     def size(self):
         '''

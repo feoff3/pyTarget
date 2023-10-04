@@ -37,23 +37,23 @@ class TIO():
         self.sen_info = info
 
 
-class Lun(DevFile):
+class Lun(object):
     '''
     Class for virtual scsi lun device
     '''
 
-    def __init__(self, id, type, path):
+    def __init__(self, id, type, dev):
         '''
         Virtual scsi lun device constructor
         @param id: device id
         @param type: device type (refer file scsi_lib 'DEVICE TYPES') 
-        @param path: virtual device file path in fs
+        @param dev: DevFile object
         '''
-        DevFile.__init__(self, path)
+        self.dev = dev
         self.id = id
         self.type = type
         self.protect = False
-        self.path = path
+        self.path = dev.path
         self.ready = True
         self.prevent = False
         self.test_case = []
