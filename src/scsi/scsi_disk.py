@@ -22,9 +22,15 @@ class Disk(Lun):
         @param dev: virtual device object DevFile
         '''
         Lun.__init__(self, id, TYPE_DISK, dev)
-        self.capacity = cap
+        self.default_capacity = cap
         self.__defect_list_init()
 
+    def get_capacity(self):
+        if self.default_capacity:
+            return self.default_capacity
+        return self.dev.size() / BLOCK_SIZE
+
+    capacity = property(get_capacity)
 
     def __defect_list_init(self):
         '''
