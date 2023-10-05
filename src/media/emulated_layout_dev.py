@@ -1,9 +1,5 @@
-import comm.dev_file
-
-def suggest_filenames_for_layout(main_name):
-    suggested_name = main_name.replace("?","").replace("\\","").replace(".","")
-    return suggested_name+"_Header",suggested_name+"_Footer"
-
+from comm.dev_file import *
+import threading
 
 class EmulatedLayoutDev():
 
@@ -18,6 +14,9 @@ class EmulatedLayoutDev():
         self.footer_dev = footer_dev
         self.__lock = threading.Lock()
         self.open()
+        print("header dev size: " + str(header_dev.size()))
+        print("main dev size: " + str(main_dev.size()))
+        print("footer dev size: " + str(footer_dev.size()))
 
     def __del__(self):
         self.close()
@@ -78,19 +77,19 @@ class EmulatedLayoutDev():
         buf2 = ""
         off1 = 0
         off2 = 0
-        len = len(buf) 
+        buflen = len(buf) 
         if offset < self.header_dev.size():
             dev1 = self.header_dev
             dev2 = self.main_dev
             off1 = offset
-            l = min(self.header_dev.size() - off1 , len)
+            l = min(self.header_dev.size() - off1 , buflen)
             buf1 = buf[0:l]
             buf2 = buf[l:]
         elif offset < self.header_dev.size() + self.main_dev.size():
             dev1 = self.main_dev
             dev2 = self.footer_dev
             off1 = offset - self.header_dev.size()
-            l = min(self.main_dev.size() - off1 , len)
+            l = min(self.main_dev.size() - off1 , buflen)
             buf1 = buf[0:l]
             buf2 = buf[l:]
         else:
@@ -99,9 +98,12 @@ class EmulatedLayoutDev():
             off1 = offset - self.header_dev.size() - self.main_dev.size()
             buf1 = buf
             buf2 = ""
-        dev1.write(off1 , buf1)
+        res = dev1.write(off1 , buf1)
+        if not res:
+            return False
         if len(buf2) > 0:
-            dev2.write(0, buf2)
+            res = dev2.write(0, buf2)
+        return res
 
     def read(self, offset, length):
         '''
@@ -116,25 +118,25 @@ class EmulatedLayoutDev():
         buf2 = ""
         off1 = 0
         off2 = 0
-        len = len(buf) 
+        buflen = length
         if offset < self.header_dev.size():
             dev1 = self.header_dev
             dev2 = self.main_dev
             off1 = offset
-            l = min(self.header_dev.size() - off1 , len)
+            l = min(self.header_dev.size() - off1 , buflen)
         elif offset < self.header_dev.size() + self.main_dev.size():
             dev1 = self.main_dev
             dev2 = self.footer_dev
             off1 = offset - self.header_dev.size()
-            l = min(self.main_dev.size() - off1 , len)
+            l = min(self.main_dev.size() - off1 , buflen)
         else:
             dev1 = self.footer_dev
             dev2 = self.footer_dev
             off1 = offset - self.header_dev.size() - self.main_dev.size()
-            l = len
+            l = buflen
         buf1 = dev1.read(off1 , l)
-        if l < len:
-            buf2 = dev2.read(0, len-l)
+        if l < buflen:
+            buf2 = dev2.read(0, buflen-l)
             buf1.extend(buf2)
         return buf1
 

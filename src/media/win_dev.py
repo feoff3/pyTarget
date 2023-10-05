@@ -80,6 +80,8 @@ class WinDev():
                 attributes = struct.pack('=IIqqIIII',versionsize,0,1,1,0,0,0,0)
                 IOCTL_DISK_SET_DISK_ATTRIBUTES = 0x7c0f4
                 outbuffer = win32file.DeviceIoControl(self.handle,  IOCTL_DISK_SET_DISK_ATTRIBUTES ,  attributes, None, None )
+                FSCTL_ALLOW_EXTENDED_DASD_IO = 0x00090083
+                outbuffer = win32file.DeviceIoControl(self.handle,  FSCTL_ALLOW_EXTENDED_DASD_IO ,  None, None, None )
             else:
                 outbuffer = win32file.DeviceIoControl(self.handle,  winioctlcon.FSCTL_LOCK_VOLUME,  None, None, None )
             return True
@@ -135,7 +137,7 @@ class WinDev():
                 return False
             return True
         except:
-            DBG_WRN('file (%s) write FAILED(offset=%d, length=%d)' % (self.path, offset, len(buf)))
+            DBG_WRN('raw win disk (%s) write FAILED(offset=%d, length=%d)' % (self.path, offset, len(buf)))
             return False
 
 
@@ -150,11 +152,11 @@ class WinDev():
             win32file.SetFilePointer(self.handle, offset, win32con.FILE_BEGIN)
             (rc , buf) = win32file.ReadFile(self.handle,length,None)
             if len(buf) != length or rc != 0:
-                DBG_WRN('file (%s) read FAILED(offset=%d, length=%d) win32 error code = %d' % (self.path, offset, length, rc))
+                DBG_WRN('win disk (%s) read FAILED(offset=%d, length=%d) win32 error code = %d' % (self.path, offset, length, rc))
                 buf = None
             return buf
         except:
-            DBG_WRN('raw read read buffer FAILED(offset=%d, length=%d)' % (offset, length))
+            DBG_WRN('raw win disk read FAILED(offset=%d, length=%d)' % (offset, length))
             return None
 
 

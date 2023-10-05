@@ -49,8 +49,8 @@ def _create_target_media(l):
                 #TODO: check parms format, return error
                 filenames = l.parms.split(';')
                 #TODO: check files are initialized
-                header = DevFile(os.path.join(dir, filenames[0]))
-                footer = DevFile(os.path.join(dir, filenames[1]))
+                header = DevFile(filenames[0])
+                footer = DevFile(filenames[1])
                 emulated_gpt = media.emulated_layout_dev.EmulatedLayoutDev(windev, header, footer)
                 windev = emulated_gpt
         else:

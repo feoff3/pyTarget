@@ -117,7 +117,8 @@ class DevFile():
                 buf = None
             return buf
         except:
-            DBG_WRN('raw read read buffer FAILED(offset=%d, length=%d)' % (offset, length))
+            DBG_WRN('raw read read buffer FAILED')
+            DBG_EXC()
             return None
 
 
