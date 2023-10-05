@@ -67,6 +67,7 @@ READ_LONG                                = 0x3e
 WRITE_LONG                               = 0x3f
 CHANGE_DEFINITION                        = 0x40
 WRITE_SAME                               = 0x41
+UNMAP                                    = 0x42 #TODO: impl and do TRIM (or maybe SCSI pass-thru) on a physical drive
 READ_TOC                                 = 0x43
 LOG_SELECT                               = 0x4c
 LOG_SENSE                                = 0x4d
