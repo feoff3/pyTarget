@@ -61,7 +61,7 @@ def _create_target_media(l):
         d = DevFile(l.path) # generic file media
     d.dev_lock()
     tp = l.type & (~sp.TYPE_PROTECT_MASK)
-    if tp == sp.TYPE_DISK:  ln = Disk(l.id, l.cap, d)
+    if tp == sp.TYPE_DISK:  ln = Disk(l.id, l.cap, d, l.physical_sector, l.logical_sector)
     elif tp == sp.TYPE_TAPE:    ln = Tape(l.id, l.cap, d)
     elif tp == sp.TYPE_ENCLOSURE:   ln = NEW_Enclosure(l.id, d)
     else:ln = Lun(l.id, l.type, d)

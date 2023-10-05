@@ -7,7 +7,7 @@
 #
 
 BLOCK_SHIFT                              = 9       # block shift
-BLOCK_SIZE                               = 512     # block size
+BLOCK_SIZE                               = 512     # default block size
 
 #
 # SCSI opcodes

@@ -64,6 +64,8 @@ class _Lun():
         self.type = 0
         self.media = 0
         self.parms = ''
+        self.logical_sector = 512
+        self.physical_sector = 512
         
 class _iSNS():
     '''
@@ -125,6 +127,10 @@ class Config(xml.sax.handler.ContentHandler):
             self.__l.type = str_2_value(asc(attributes['type']))
             if attributes.has_key('media'):
                 self.__l.media = str_2_value(asc(attributes['media']))
+            if attributes.has_key('lsector'):
+                self.__l.logical_sector = str_2_value(asc(attributes['lsector']))
+            if attributes.has_key('psector'):
+                self.__l.physical_sector = str_2_value(asc(attributes['psector']))
             if attributes.has_key('parms'):
                 self.__l.parms = asc(attributes['parms'])
             self.__h.lun.append(copy.deepcopy(self.__l))

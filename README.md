@@ -10,6 +10,7 @@ https://sourceforge.net/projects/pytarget/
 - Ability to auto-detect and grow disk capacity
 - Ability to use volumes (with emulated GPT) as data source
 - 2TB+ disks support
+- Customize disk physical and logical sector size
 
 ## Prerequisites
 - Python 2.7.10
@@ -26,10 +27,11 @@ https://sourceforge.net/projects/pytarget/
 - `echo iqn | iscsicli | findstr [iqn`
 3. Locate physical disk path, and size in bytes in form of `\\.\PhysicalDriveX` with `wmic diskdrive get Manufacturer, DeviceId, Model, Index, Size`
 4. Open `pytarget/src/config.xml` and insert the following line inside of `<target>` tag:
-- `<host name="IQN" target_pwd="" initiator_pwd="> <lun id="0" type="0" path="\\.\PhysicalDrive2" capacity="6442450944" media="0x1000"/> </host>`
+- `<host name="IQN" target_pwd="" initiator_pwd="> <lun id="0" type="0" path="\\.\PhysicalDrive2" capacity="6442450944" media="0x1000" lsector="512" psector="4096"/> </host>`
 - replace `IQN` in `name` attribute with with one you got from step earlier
 - replace `\\.\PhysicalDrive2` in `path` with windows drive path
 - for fixed capacity, replace `capacity` value with size in sectors, for that divide size in bytes by 512; for dynamic capacity set the value to "0" for auto-detect and auto-expand
+- fix 'psector' value if you want to override physical sector size reported by iscsi target
 
 Example, in case we want to use disk #3:
 ```
@@ -58,7 +60,7 @@ Then the corresponding entry in config.xml will look like
 5. Start the target:
 - Open `cmd.exe` and navigate to pytarget folder, `src` subfolder
 - `C:\Python27\python.exe pyTarget.py`
-6. Start iscsi intiator to connect to target (change `127.0.0.1` to target IP address if it is installed on other PC in the network):
+6. Start iscsi intiator to connect to target, from new cmd.exe console (change `127.0.0.1` to target IP address if it is installed on other PC in the network):
 - `iscsicli QAddTargetPortal 127.0.0.1`
 - `iscsicli qlogintarget iqn.2006-11.1.python.iscsi.target-1`
 - Check the disk is connected by `iscsicli reporttargetmappings`

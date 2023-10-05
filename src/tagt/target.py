@@ -7,6 +7,8 @@
 #
 import threading
 from comm.debug import DBG_ERR, DBG_WRN, DBG_PRN
+from iscsi.iscsi_lib import ISCSI_FULL_FEATURE_PHASE, ISCSI_TARGET_STOP
+
 
 class Target():
     '''
@@ -143,8 +145,6 @@ class Target():
         '''
         Stop current target
         '''
-        from iscsi.iscsi_lib import \
-            ISCSI_FULL_FEATURE_PHASE, ISCSI_TARGET_STOP
 
         # FIXME? 
         for host in self.host_list:

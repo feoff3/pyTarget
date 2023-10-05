@@ -375,7 +375,7 @@ def __ReadCapacityRsp(cmd):
             cmd.out_buf = u32_buf(0xffffffff)
         else:
             cmd.out_buf = u32_buf(cmd.lun.capacity - 1)
-        cmd.out_buf += u32_buf(BLOCK_SIZE)
+        cmd.out_buf += u32_buf(cmd.lun.sector_size)
 
 def __ReadCapacity16Rsp(cmd):
     '''
@@ -385,9 +385,22 @@ def __ReadCapacity16Rsp(cmd):
     bytes_expected = cmd.cdb[13]
     if cmd.check_lun(TYPE_DISK):
         cmd.out_buf = u64_buf(cmd.lun.capacity - 1)
-        cmd.out_buf += u32_buf(BLOCK_SIZE)
+        cmd.out_buf += u32_buf(cmd.lun.sector_size)
         if bytes_expected > 12:
-            cmd.out_buf += bytearray(bytes_expected - 12)
+            cmd.out_buf += u8_buf(0)
+            # here we get the physical sector alignment info
+            # calc log of how many logical sectors are in one phys sector
+            phys_sector_size = cmd.lun.physical_sector_size 
+            logical_sectors_per_physical = phys_sector_size / cmd.lun.sector_size
+            #print("logical_sectors_per_physical = " + str(logical_sectors_per_physical))
+            logarithm = 0
+            while logical_sectors_per_physical > 1:
+                logical_sectors_per_physical >>= 1
+                logarithm+=1
+            #print("logarithm = " + str(logarithm))
+            cmd.out_buf += u8_buf(logarithm)
+        if bytes_expected > 14:
+            cmd.out_buf += bytearray(bytes_expected - 14)
 
 #=======================================================
 #                Read Block Limits
