@@ -716,7 +716,10 @@ def __SyncCacheRsp(cmd):
     scsi synchronize cache response
     '''
     cmd.status = SAM_STAT_GOOD
-    cmd.check_lun(None, True)
+    if not cmd.check_lun(None, True):
+        return
+    if is_disk(cmd.lun):
+        cmd.lun.dev.flush()
 
 
 #=======================================================

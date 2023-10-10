@@ -16,6 +16,7 @@ from iscsi.iscsi_erl import *
 
 ISCSI_CMD_UNNEED_RSP            = 0x00
 ISCSI_CMD_NEED_RSP              = 0x01
+ISCSI_CMD_DELAYED_RSP           = 0x02
 
 # iscsi session/connect type
 SESSION_ERROR                   = 0x00

@@ -22,7 +22,7 @@ class WinDev():
     '''
         windows device (disk,volume,partition) for device.
     '''
-    def __init__(self, path, diskdev=True):
+    def __init__(self, path, diskdev=True, async_write_mode=False, async_cache_size_ops=16):
         '''
         initialize and open file
         @param path: file path
@@ -30,7 +30,10 @@ class WinDev():
         self.handle = None
         self.path = path
         self.diskdev = diskdev
+        self.async_write_mode = async_write_mode
+        self.async_cache_size_ops = async_cache_size_ops
         self.__lock = threading.Lock()
+        self.pending_io = dict()
         self.open()
 
     def __del__(self):
@@ -51,7 +54,10 @@ class WinDev():
         if self.handle:
             return True
         try:
-            self.handle = win32file.CreateFile( self.path , ntsecuritycon.GENERIC_READ|  ntsecuritycon.FILE_WRITE_DATA, win32con.FILE_SHARE_READ|win32con.FILE_SHARE_WRITE, None,   win32con.OPEN_EXISTING, win32con.FILE_FLAG_NO_BUFFERING , 0 )
+            flags = win32con.FILE_FLAG_NO_BUFFERING
+            if self.async_write_mode:
+                flags |= win32con.FILE_FLAG_OVERLAPPED
+            self.handle = win32file.CreateFile( self.path , ntsecuritycon.GENERIC_READ|  ntsecuritycon.FILE_WRITE_DATA, win32con.FILE_SHARE_READ|win32con.FILE_SHARE_WRITE, None,   win32con.OPEN_EXISTING, flags , 0 )
             return True
         except:
             DBG_WRN('open device %s FAILED' % self.path)
@@ -64,6 +70,7 @@ class WinDev():
         close file
         '''
         if self.handle:
+            self.flush()
             self.dev_unlock()
             win32api.CloseHandle(self.handle)
             self.handle = None
@@ -80,9 +87,9 @@ class WinDev():
                 attributes = struct.pack('=IIqqIIII',versionsize,0,1,1,0,0,0,0)
                 IOCTL_DISK_SET_DISK_ATTRIBUTES = 0x7c0f4
                 outbuffer = win32file.DeviceIoControl(self.handle,  IOCTL_DISK_SET_DISK_ATTRIBUTES ,  attributes, None, None )
+            else:
                 FSCTL_ALLOW_EXTENDED_DASD_IO = 0x00090083
                 outbuffer = win32file.DeviceIoControl(self.handle,  FSCTL_ALLOW_EXTENDED_DASD_IO ,  None, None, None )
-            else:
                 outbuffer = win32file.DeviceIoControl(self.handle,  winioctlcon.FSCTL_LOCK_VOLUME,  None, None, None )
             return True
         except:
@@ -121,6 +128,33 @@ class WinDev():
             DBG_WRN('get file(%s) status FAILED.' % self.path);
             return 0
 
+    def _clear_completed_io_list(self, wait=False):
+        completed = list()
+        duration = win32event.INFINITE
+        if wait == False:
+            duration = 0
+        for k,v in self.pending_io.iteritems():
+            if 0 == win32event.WaitForSingleObject(k.hEvent, duration):
+                completed.append(k)
+        for c in completed:
+            self.pending_io.pop(c)
+
+    def _wait_till_fits_in_cache(self, opsize):
+        while True:
+            current_count = 0
+            wait_list = list()
+            for k,v in self.pending_io.iteritems():
+                if 0 == win32event.WaitForSingleObject(k.hEvent, 0):
+                    continue
+                current_count += 1
+                wait_list.append(k.hEvent)
+            if current_count < self.async_cache_size_ops:
+                break
+            # wait till at least one object is free
+            if len(wait_list) > 0:
+                # allows to wait on 64 handles max
+                rc = win32event.WaitForMultipleObjects(wait_list[:64], 0, win32event.INFINITE)
+
 
     def write(self, offset, buf):
         '''
@@ -130,14 +164,26 @@ class WinDev():
         @return: True for success, False for failed
         '''
         try:
-            win32file.SetFilePointer(self.handle, offset, win32con.FILE_BEGIN)
-            rc, bwr = win32file.WriteFile(self.handle,buf,None)
-            if rc != 0:
-                DBG_WRN('win32file.WriteFile (%s) write FAILED(offset=%d, length=%d) win32err code = %d' % (self.path, offset, len(buf) , rc))
-                return False
-            return True
+            self._clear_completed_io_list()
+            if not self.async_write_mode:
+                win32file.SetFilePointer(self.handle, offset, win32con.FILE_BEGIN)
+                rc, bwr = win32file.WriteFile(self.handle,buf,None)
+                if rc != 0:
+                    DBG_WRN('win32file.WriteFile (%s) write FAILED(offset=%d, length=%d) win32err code = %d' % (self.path, offset, len(buf) , rc))
+                    return False
+                return True
+            else:
+                self._wait_till_fits_in_cache(len(buf))
+                writeOvlap = win32file.OVERLAPPED()
+                writeOvlap.hEvent = win32event.CreateEvent(None, 1, 0, None)
+                writeOvlap.Offset = offset
+                writeOvlap.OffsetHigh = offset >> 32
+                self.pending_io[writeOvlap] = buf
+                rc, bwr = win32file.WriteFile(self.handle,buf,writeOvlap)
+                return True
         except:
             DBG_WRN('raw win disk (%s) write FAILED(offset=%d, length=%d)' % (self.path, offset, len(buf)))
+            DBG_EXC()
             return False
 
 
@@ -149,14 +195,25 @@ class WinDev():
         @return: None for failed, other for success
         '''
         try:
-            win32file.SetFilePointer(self.handle, offset, win32con.FILE_BEGIN)
-            (rc , buf) = win32file.ReadFile(self.handle,length,None)
-            if len(buf) != length or rc != 0:
-                DBG_WRN('win disk (%s) read FAILED(offset=%d, length=%d) win32 error code = %d' % (self.path, offset, length, rc))
-                buf = None
-            return buf
+            self._clear_completed_io_list()
+            if not self.async_write_mode:
+                win32file.SetFilePointer(self.handle, offset, win32con.FILE_BEGIN)
+                (rc , buf) = win32file.ReadFile(self.handle,length,None)
+                if len(buf) != length or rc != 0:
+                    DBG_WRN('win disk (%s) read FAILED(offset=%d, length=%d) win32 error code = %d' % (self.path, offset, length, rc))
+                    buf = None
+                return buf
+            else:
+                readOvlap = win32file.OVERLAPPED()
+                readOvlap.hEvent = win32event.CreateEvent(None, 1, 0, None)
+                readOvlap.Offset = offset
+                readOvlap.OffsetHigh = offset >> 32
+                (rc , buf) = win32file.ReadFile(self.handle,length,readOvlap)
+                win32event.WaitForSingleObject(readOvlap.hEvent, win32event.INFINITE)
+                return buf
         except:
             DBG_WRN('raw win disk read FAILED(offset=%d, length=%d)' % (offset, length))
+            DBG_EXC()
             return None
 
 
@@ -164,5 +221,5 @@ class WinDev():
         '''
         flush cache buffer
         '''
-        pass
+        self._clear_completed_io_list(True)
 
