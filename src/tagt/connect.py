@@ -415,13 +415,28 @@ class Connect():
 
             # remember to check connection state,
             # current connect may be closed by other connect.
-            req = self.recv()
+            req = None
+            try:
+                #TODO: instead of timeout, determine the number
+                # of requests inside the network queue 
+                # if there are more than one, mark the operations as
+                # async, otherwise sync is OK
+                self.sock.time_out(0.1)
+                req = self.recv()
+                self.sock.time_out(None)
+            except:
+                DBG_EXC()
+            self.session.scsi_cmd_list.process_async_read_requests()
+            
             if self.state == ISCSI_LOGOUT_PHASE:
                 return
-
+            
             # check and do error recover if necessary.
             # (current support error recovery level = 2)
             if req.state != PDU_STATE_GOOD:
+                if req.state == PDU_STATE_SOCK_TIMEOUT:
+                    continue
+                DBG_WRN("Problem within the session, recovering...")
                 if iscsi_do_recovery(self, req):
                     continue
                 else:

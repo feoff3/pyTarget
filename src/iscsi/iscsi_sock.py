@@ -66,6 +66,9 @@ class IscsiSock(CommSock):
         if buf is None:
             pdu.state = PDU_STATE_SOCK_FAILED
             return pdu
+        elif len(buf) == 0:
+            pdu.state = PDU_STATE_SOCK_TIMEOUT
+            return pdu
         elif len(buf) != ISCSI_BHS_SIZE:
             pdu.state = PDU_STATE_HEAD_FAILED
             return pdu

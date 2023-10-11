@@ -40,10 +40,12 @@ class WinDev():
         self.close()
 
     def lock(self):
-        self.__lock.acquire()
+        if not self.async_write_mode:
+            self.__lock.acquire()
     
     def unlock(self):
-        self.__lock.release()
+        if not self.async_write_mode:
+            self.__lock.release()
 
 
     def open(self):

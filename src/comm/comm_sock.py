@@ -6,6 +6,7 @@
 #    Create by Wu.Qing-xiu (2009-09-27)
 #
 
+import socket as socket_module
 from socket import *
 from comm.debug import DBG_ERR, DBG_WRN
 
@@ -131,6 +132,8 @@ class CommSock():
                 elif (self.type == SOCKET_UDP_SERVER or
                       self.type == SOCKET_UDP_CLIENT):
                     buf += self.__cli_sock.recvfrom(length - len(buf))
+            except socket_module.timeout:
+                return buf
             except:
                 return None
         return buf
