@@ -10,6 +10,7 @@
 from scsi.scsi_lib import *
 from iscsi.iscsi_lib import *
 from comm.comm_list import *
+import threading
 
 #
 # scsi task status
@@ -91,6 +92,46 @@ class TagtCache(List):
         self.unlock()
         return ret
 
+    def _handle_read(self, conn, req, cmd, cmdsn):
+        try:
+            exe_scsi_cmd(cmd)
+            buf = cmd.out_buf
+            if buf:
+                spdtl = len(buf)
+                edtl = req.get_exp_len()
+                alloc = ALLOCATE_LEN(cmd.cdb)
+                if alloc >= 0:
+                    spdtl = min(alloc, spdtl)
+                residual = edtl - spdtl
+                length = min(edtl, spdtl, MBL_VAL(conn))
+                limit = conn.PerMaxRecvDataSegmentLength.value
+                offset = 0
+
+                # if cmd status is not SAM_STAT_GOOD,
+                # finial data pdu do not contain scsi status
+                status = (cmd.status == SAM_STAT_GOOD)
+
+                # task management can about scsk task, and set
+                # cmd.state to SCSI_TASK_FREE.
+                while (length > 0):
+                    rsp = PDU()
+                    pdu_len = min(length, limit)
+                    DataIn(conn, req, rsp, buf[offset:offset+pdu_len], length<=limit, offset, residual, status)
+                    print("Passed ExpCmdSn:" +str(cmdsn)+ "PDU ExpCmdSn: " + str(rsp.get_exp_cmdsn()))
+                    conn.send(rsp)
+                    offset += pdu_len
+                    length -= pdu_len
+            return True
+        except:
+            DBG_EXC()
+        return False
+
+    def handle_read_async(self, conn, req, cmd, cmdsn):
+        thr = threading.Thread(target = self._handle_read , args=(conn,req,cmd,cmdsn,))
+        thr.isDaemon = True
+        thr.start()
+        cmd.status = SAM_STAT_GOOD
+        return True
 
     def cmd_request(self, conn, req):
         '''
@@ -113,36 +154,12 @@ class TagtCache(List):
         # reading command task
         #
         if IS_IN_IOCMD(cmd.cdb[0]):
-            exe_scsi_cmd(cmd)
-            buf = cmd.out_buf
-            if buf:
-                spdtl = len(buf)
-                edtl = req.get_exp_len()
-                alloc = ALLOCATE_LEN(cmd.cdb)
-                if alloc >= 0:
-                    spdtl = min(alloc, spdtl)
-                residual = edtl - spdtl
-                length = min(edtl, spdtl, MBL_VAL(conn))
-                limit = conn.PerMaxRecvDataSegmentLength.value
-                offset = 0
-
-                # if cmd status is not SAM_STAT_GOOD,
-                # finial data pdu do not contain scsi status
-                status = (cmd.status == SAM_STAT_GOOD)
-
-                # task management can about scsk task, and set
-                # cmd.state to SCSI_TASK_FREE.
-                while (length > 0 and cmd.state != SCSI_TASK_FREE):
-                    rsp = PDU()
-                    pdu_len = min(length, limit)
-                    DataIn(conn, req, rsp, buf[offset:offset+pdu_len], length<=limit, offset, residual, status)
-                    conn.send(rsp)
-                    offset += pdu_len
-                    length -= pdu_len
-
+            print("new read conn ExpCmdSn " + str(conn.CurExpCmdSn))
+            if self._handle_read(conn, req, cmd, conn.CurExpCmdSn):
+                print("end read conn ExpCmdSn " + str(conn.CurExpCmdSn))
                 # if cmd status is not SAM_STAT_GOOD,
                 # scsi response will be send at the following code.
-                if cmd.status == SAM_STAT_GOOD and len(buf) > 0:
+                if cmd.status == SAM_STAT_GOOD:
                     cmd.state = SCSI_TASK_FREE
                     return cmd
 

@@ -112,7 +112,7 @@ class Disk(Lun):
             tio.set_sense(ILLEGAL_REQUEST, 0x2400)
             DBG_WRN('disk(%s) read FAILED, overflow(offset=%d, length=%d, cap=%d)' % (self.path, lba, nr, self.capacity))
             return False
-        self.lock()
+        self.lock() #TODO: remove the lock for devs that support async operations
         tio.buffer = self.dev.read(long(lba) * self.sector_size, nr*self.sector_size)
         if not tio.buffer:
             tio.set_sense(MEDIUM_ERROR, 0x1100)
