@@ -176,7 +176,7 @@ class WinDev():
                 self._wait_till_fits_in_cache(len(buf))
                 writeOvlap = win32file.OVERLAPPED()
                 writeOvlap.hEvent = win32event.CreateEvent(None, 1, 0, None)
-                writeOvlap.Offset = offset
+                writeOvlap.Offset = offset & 0xFFFFFFFF
                 writeOvlap.OffsetHigh = offset >> 32
                 self.pending_io[writeOvlap] = buf
                 rc, bwr = win32file.WriteFile(self.handle,buf,writeOvlap)
@@ -206,7 +206,7 @@ class WinDev():
             else:
                 readOvlap = win32file.OVERLAPPED()
                 readOvlap.hEvent = win32event.CreateEvent(None, 1, 0, None)
-                readOvlap.Offset = offset
+                readOvlap.Offset = offset & 0xFFFFFFFF
                 readOvlap.OffsetHigh = offset >> 32
                 (rc , buf) = win32file.ReadFile(self.handle,length,readOvlap)
                 win32event.WaitForSingleObject(readOvlap.hEvent, win32event.INFINITE)
