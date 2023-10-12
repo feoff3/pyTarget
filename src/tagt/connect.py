@@ -397,6 +397,11 @@ class Connect():
         '''
         if self.login_handle():
             self.login_finish()
+            #import cProfile
+            #import pstats
+            #cProfile.runctx("self.Task()" , globals() , locals(), "my_func_stats")
+            #p = pstats.Stats("my_func_stats")
+            #p.sort_stats("cumulative").print_callers()
             self.Task()
         self.Stop()
 
@@ -416,21 +421,21 @@ class Connect():
             # remember to check connection state,
             # current connect may be closed by other connect.
             req = None
+            self.session.scsi_cmd_list.process_async_read_requests(wait=False)
+            if not self.sock.has_pending_data():
+                # we are going to block on recv so instead of waiting for recv, wait on disks
+                self.session.scsi_cmd_list.process_async_read_requests(wait=True)
             try:
-                #TODO: instead of timeout, determine the number
-                # of requests inside the network queue 
-                # if there are more than one, mark the operations as
-                # async, otherwise sync is OK
-                self.sock.time_out(0.1)
                 req = self.recv()
-                self.sock.time_out(None)
             except:
                 DBG_EXC()
-            self.session.scsi_cmd_list.process_async_read_requests()
             
             if self.state == ISCSI_LOGOUT_PHASE:
                 return
             
+            if not req:
+                 DBG_WRN("Crticial problem within the session, aborting...")
+                 break
             # check and do error recover if necessary.
             # (current support error recovery level = 2)
             if req.state != PDU_STATE_GOOD:

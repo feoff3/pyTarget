@@ -8,6 +8,7 @@
 
 import os, struct
 from string import *
+import array
 
 def do_pack(ary):
     return struct.pack('B'*len(ary), *ary[:])
@@ -73,6 +74,8 @@ def array_2_hex(arry, offset, len):
     ''' 
     array to hex
     '''
+    if len == 4:
+        return (int(arry[offset]) << 24) + (int(arry[offset+1]) << 16) + (int(arry[offset+2]) << 8) + int(arry[offset+3]) 
     val = arry[offset]
     for i in arry[offset + 1: offset + len]:
         val = val * 0x100 + i
@@ -82,6 +85,11 @@ def hex_2_array(val, size):
     '''
     hex to array
     '''
+    if size == 4:
+        return [(val >> 24) & 0xFF, (val >> 16) & 0xFF, (val >> 8) & 0xFF , (val) & 0xFF] 
+    if size == 2:
+        return [(val >> 8) & 0xFF , (val) & 0xFF] 
+
     lst = []
     while val > 0:
         lst.append(val % 0x100)

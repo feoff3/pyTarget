@@ -6,7 +6,7 @@
 #    Create by Wu.Qing-xiu (2009-09-26)
 #    Modify by Wu.Qing-xiu (2010-4-10)
 #
-
+from comm.delayed_buffer import *
 from scsi.scsi_lib import *
 from iscsi.iscsi_lib import *
 from comm.comm_list import *
@@ -27,24 +27,15 @@ class TagtCache(List):
     class for target scsi task and iscsi task cahce.
     @note: all scsi task item pushed into cache must hold an unique id
     '''
-    def __init__(self , read_pool_numthreads = 16):
+    def __init__(self):
         '''
         cache constructor
         '''
         List.__init__(self)
-        self.read_ready_list = list()
-        self.read_pool_threads = list()
-        self.read_pool_numthreads = read_pool_numthreads
-        self.read_ops_queue = Queue(self.read_pool_numthreads*2)
-        for i in range(0, self.read_pool_numthreads):
-            thr = threading.Thread(target = self._read_worker)
-            thr.start()
-            self.read_pool_threads.append(thr)
-        #self._handle_read , args=(conn,req,cmd,cmdsn,)
+        self.read_pending_list = list()
 
     def __del__(self):
-        for i in range(0, self.read_pool_numthreads):
-            self.read_ops_queue.put(None)
+        self.process_async_read_requests(True)
 
     def push_pdu(self, pdu):
         '''
@@ -113,6 +104,20 @@ class TagtCache(List):
             self.read_ops_queue.task_done()
         print("Read worker stopped")
 
+    def _handle_read_no_buff(self, conn, req, cmd):
+        if cmd:
+                rsp = PDU()
+                ScsiRsp(conn, req, rsp, cmd.status, 0)
+                rsp.data = ''
+                #
+                # sense valid, set sense data
+                #
+                if cmd.status != SAM_STAT_GOOD:
+                    if cmd.sense:
+                        rsp.data = cmd.sense
+                        rsp.set_data_len(len(rsp.data))
+                conn.send(rsp)
+                cmd.state = SCSI_TASK_FREE
 
     def _handle_read_buff(self, conn, req, cmd, cmdsn , buf):
         if cmd:
@@ -148,55 +153,51 @@ class TagtCache(List):
             exe_scsi_cmd(cmd)
             buf = cmd.out_buf
             #print("Read cmdsn " + str(cmdsn) + " complete")
-            self.read_ready_list.append((conn, req, cmd, cmdsn , buf))
+            self.read_pending_list.append((conn, req, cmd, cmdsn , buf))
             return True
         except:
             DBG_EXC()
         return False
 
-    def handle_read_async(self, conn, req, cmd, cmdsn):
-        try:
-            self.read_ops_queue.put((conn, req, cmd, cmdsn))
-        except:
-            DBG_EXC()
-        self.process_async_read_requests()
-        cmd.status = SAM_STAT_GOOD
-        return True
+    def _wait_pending_ready(self):
+        for op in self.read_pending_list:
+            buf = op[4]
+            if isinstance(buf, DelayedBuffer):
+                buf_list = [x[4] for x in self.read_pending_list if isinstance(x[4], DelayedBuffer)]
+                buf.wait_for_one(buf_list)
+                break
+            
 
-    def handle_read_sync(self, conn, req, cmd, cmdsn):
-        res = False
-        try:
-            res = self._handle_read(conn, req, cmd, cmdsn)
-        except:
-            DBG_EXC()
-        if res:
-            cmd.status = SAM_STAT_GOOD
-        self.process_async_read_requests()
-        return res
+    def process_async_read_requests(self , wait=False):
+        while 1:
+            ready_list = list()
+            for op in self.read_pending_list:
+                buf = op[4]
+                error = False
+                if buf:
+                    if not isinstance(buf, DelayedBuffer) or buf.check():
+                        ready_list.append(op)
+                        if not isinstance(buf, DelayedBuffer) or buf.error_code() == 0:
+                            self._handle_read_buff(op[0], op[1], op[2] , op[3] , op[4])
+                        else:
+                            error = True
+                            cmd.status = SAM_STAT_CHECK_CONDITION
+                if not buf or error:
+                    ready_list.append(op)
+                    self._handle_read_no_buff(op[0], op[1], op[2])
 
-    def process_async_read_requests(self):
-        # feoff: I belive this should be thread-safe
-        temp_list = self.read_ready_list[:]
-        for op in temp_list:
-            if op[4]:
-                self._handle_read_buff(op[0], op[1], op[2] , op[3] , op[4])
+            for op in ready_list:
+                self.read_pending_list.remove(op)
+            
+            if wait:
+                if len(self.read_pending_list) > 0:
+                    self._wait_pending_ready()
+                else:
+                    break
             else:
-                conn = op[0]; req = op[1]; cmd = op[2]
-                rsp = PDU()
-                ScsiRsp(conn, req, rsp, cmd.status, 0)
-                rsp.data = ''
-                #
-                # sense valid, set sense data
-                #
-                if cmd.status != SAM_STAT_GOOD:
-                    if cmd.sense:
-                        rsp.data = cmd.sense
-                        rsp.set_data_len(len(rsp.data))
-                conn.send(rsp)
-                cmd.state = SCSI_TASK_FREE
-        for op in temp_list:
-            self.read_ready_list.remove(op)
-        #print("Read list size " + str(len(self.read_ready_list)))
+                break
+            
+            #print("Read list size " + str(len(self.read_ready_list)))
 
     def cmd_request(self, conn, req):
         '''
@@ -219,22 +220,11 @@ class TagtCache(List):
         # reading command task
         #
         if IS_IN_IOCMD(cmd.cdb[0]):
-            if not IS_READ(cmd.cdb[0]):
-                if self.handle_read_sync(conn, req, cmd, conn.CurExpCmdSn):
+            if self._handle_read(conn, req, cmd, conn.CurExpCmdSn):
                     if cmd.status == SAM_STAT_GOOD:
                         cmd.state = SCSI_TASK_FREE
-                    return cmd
-
-            #TODO: go into async mode only if there are several requests inside of the socket
-            #print("new read conn ExpCmdSn " + str(conn.CurExpCmdSn))
-            if self.handle_read_async(conn, req, cmd, conn.CurExpCmdSn):
-                #print("end read conn ExpCmdSn " + str(conn.CurExpCmdSn))
-                # if cmd status is not SAM_STAT_GOOD,
-                # scsi response will be send at the following code.
-                if cmd.status == SAM_STAT_GOOD:
-                    cmd.state = SCSI_TASK_FREE
-                    return cmd
-
+                        return cmd
+            # read data happens on an outer call to process_async_read_requests()
         #
         # writing command task
         #

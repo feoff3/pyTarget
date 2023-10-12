@@ -43,7 +43,7 @@ def _create_target_media(l):
     if (l.media & SOURCE_MEDIA_WINDEV_MASK) > 0:
         if platform.system() == "Windows":
             import media.win_dev
-            windev = media.win_dev.WinDev(l.path , l.media == SOURCE_MEDIA_WINDRIVE, True)
+            windev = media.win_dev.WinDev(l.path , l.media == SOURCE_MEDIA_WINDRIVE, True, True)
             if l.media == SOURCE_MEDIA_WINVOL_EMULATED_DISK_LAYOUT:
                 import media.emulated_layout_dev
                 #TODO: check parms format, return error

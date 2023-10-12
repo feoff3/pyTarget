@@ -9,7 +9,7 @@
 import socket as socket_module
 from socket import *
 from comm.debug import DBG_ERR, DBG_WRN
-
+import select
 
 SOCKET_TCP_SERVER = 1
 SOCKET_TCP_CLIENT = 2
@@ -163,3 +163,14 @@ class CommSock():
         @param sec: timeout in second
         '''
         self.__cli_sock.settimeout(sec)
+
+    def has_pending_data(self):
+        '''
+        gets if data is available to be read
+        '''
+        rlist=[self.__cli_sock]
+        read_sockets, write_sockets, error_sockets = select.select(rlist, [], [], 0)
+        if read_sockets:
+            if self.__cli_sock in read_sockets:
+                return True
+        return False
