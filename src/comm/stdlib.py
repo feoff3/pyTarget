@@ -74,22 +74,24 @@ def array_2_hex(arry, offset, len):
     ''' 
     array to hex
     '''
-    if len == 4:
-        return (int(arry[offset]) << 24) + (int(arry[offset+1]) << 16) + (int(arry[offset+2]) << 8) + int(arry[offset+3]) 
     val = arry[offset]
     for i in arry[offset + 1: offset + len]:
         val = val * 0x100 + i
     return val
 
+def hex2_2_array(val):
+    return array.array('B' , struct.pack('>H', val))
+
+def hex4_2_array(val):
+    return array.array('B' , struct.pack('>I', val))
+
+def hex8_2_array(val):
+    return array.array('B' , struct.pack('>Q', val))
+
 def hex_2_array(val, size):
     '''
     hex to array
     '''
-    if size == 4:
-        return [(val >> 24) & 0xFF, (val >> 16) & 0xFF, (val >> 8) & 0xFF , (val) & 0xFF] 
-    if size == 2:
-        return [(val >> 8) & 0xFF , (val) & 0xFF] 
-
     lst = []
     while val > 0:
         lst.append(val % 0x100)
@@ -97,7 +99,7 @@ def hex_2_array(val, size):
     while (len(lst) < size):
         lst.append(0)
     lst.reverse()
-    return lst
+    return array.array('B' , lst)
 
 def u8_buf(val):
     return do_pack(hex_2_array(val, 1))

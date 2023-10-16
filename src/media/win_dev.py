@@ -190,6 +190,7 @@ class WinDev():
             return struct.unpack("@q" , outbuffer)[0]
         except:
             DBG_WRN('get file(%s) status FAILED.' % self.path);
+            DBG_EXC()
             return 0
 
     def _clear_completed_io_list(self, wait=False):
@@ -274,6 +275,7 @@ class WinDev():
                 return buf
             else:
                 readOvlap = win32file.OVERLAPPED()
+                #TODO: maybe we don't need that much events and can reuse some of them
                 readOvlap.hEvent = win32event.CreateEvent(None, 1, 0, None)
                 readOvlap.Offset = offset & 0xFFFFFFFF
                 readOvlap.OffsetHigh = offset >> 32

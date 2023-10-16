@@ -5,7 +5,7 @@
 #    -----------------------------------------------------------------
 #    Create by Wu.Qing-xiu (2009-09-28)
 #
-
+import array
 import hashlib
 import socket
 import scsi.scsi_lib as slib
@@ -29,7 +29,7 @@ class PDU():
     class for iscsi pdu
     '''
     def __init__(self):
-        self.bhs = [0] * ISCSI_BHS_SIZE
+        self.bhs = array.array('B' , [0] *ISCSI_BHS_SIZE) 
         self.ahs = None
         self.data = ''
         self.state = PDU_STATE_GOOD
@@ -52,22 +52,22 @@ class PDU():
     def get_data_offset(self):       return array_2_hex(self.bhs, 40, 4)    
     def get_res_cnt(self):           return array_2_hex(self.bhs, 44, 4)
     # set ops
-    def set_tsih(self, val):         self.bhs[14:16] = hex_2_array(val, 2)
-    def set_itt(self, val):          self.bhs[16:20] = hex_2_array(val, 4)
-    def set_ttt(self, val):          self.bhs[20:24] = hex_2_array(val, 4)
-    def set_cid(self, val):          self.bhs[20:22] = hex_2_array(val, 2)
+    def set_tsih(self, val):         self.bhs[14:16] = hex2_2_array(val)
+    def set_itt(self, val):          self.bhs[16:20] = hex4_2_array(val)
+    def set_ttt(self, val):          self.bhs[20:24] = hex4_2_array(val)
+    def set_cid(self, val):          self.bhs[20:22] = hex2_2_array(val)
     def set_lun(self, val):          self.bhs[9] = val & 0xFF
-    def set_cmdsn(self, val):        self.bhs[24:28] = hex_2_array(val, 4)
+    def set_cmdsn(self, val):        self.bhs[24:28] = hex4_2_array(val)
     def set_data_len(self, val):     self.bhs[5:8] = hex_2_array(val, 3)
-    def set_exp_len(self, val):      self.bhs[20:24] = hex_2_array(val, 4)
-    def set_statsn(self, val):       self.bhs[24:28] = hex_2_array(val, 4) 
-    def set_exp_statsn(self, val):   self.bhs[28:32] = hex_2_array(val, 4)
-    def set_exp_cmdsn(self, val):    self.bhs[28:32] = hex_2_array(val, 4)
+    def set_exp_len(self, val):      self.bhs[20:24] = hex4_2_array(val)
+    def set_statsn(self, val):       self.bhs[24:28] = hex4_2_array(val) 
+    def set_exp_statsn(self, val):   self.bhs[28:32] = hex4_2_array(val)
+    def set_exp_cmdsn(self, val):    self.bhs[28:32] = hex4_2_array(val)
     def set_max_cmdsn(self, val):    self.bhs[32:36] = hex_2_array(min(val, 0xffffffff), 4)
-    def set_data_sn(self, val):      self.bhs[36:40] = hex_2_array(val, 4)
-    def set_r2t_sn(self, val):       self.bhs[36:40] = hex_2_array(val, 4)
-    def set_data_offset(self, val):  self.bhs[40:44] = hex_2_array(val, 4)
-    def set_res_cnt(self, val):      self.bhs[44:48] = hex_2_array(val, 4)
+    def set_data_sn(self, val):      self.bhs[36:40] = hex4_2_array(val)
+    def set_r2t_sn(self, val):       self.bhs[36:40] = hex4_2_array(val)
+    def set_data_offset(self, val):  self.bhs[40:44] = hex4_2_array(val)
+    def set_res_cnt(self, val):      self.bhs[44:48] = hex4_2_array(val)
 
      
 class SessionID():
@@ -137,7 +137,7 @@ def LoginReq(conn, req, rsp):
     req.bhs[1]     = 0                                      # flags
     req.bhs[2]     = ISCSI_DRAFT20_VERSION                  # max version
     req.bhs[3]     = ISCSI_DRAFT20_VERSION                  # active version
-    req.bhs[8:14]  = conn.session.sid.isid[:]               # ISID
+    req.bhs[8:14]  = array.array('B' , conn.session.sid.isid[:])               # ISID
     req.set_tsih(conn.session.sid.tsih)                     # TSIH
     req.set_itt(conn.CurITT)                                # ITT
     req.set_cid(conn.cid)                                   # CID
@@ -242,8 +242,8 @@ def LoginRsp(conn, req, rsp, err_class, err_detail):
     rsp.bhs[1]     = req.bhs[1]                         # Flags
     rsp.bhs[2]     = ISCSI_DRAFT20_VERSION              # Max version
     rsp.bhs[3]     = ISCSI_DRAFT20_VERSION              # Active version
-    rsp.bhs[8:15]  = req.bhs[8:15]                      # isid
-    rsp.bhs[16:20] = req.bhs[16:20]                     # ITT
+    rsp.bhs[8:15]  = array.array('B', req.bhs[8:15])                      # isid
+    rsp.bhs[16:20] = array.array('B', req.bhs[16:20])                     # ITT
 
     t_bit = req.bhs[1] & ISCSI_FLAG_LOGIN_TRANSIT
     csg_bit = FLAGS_CSG(req.bhs[1])
@@ -1039,7 +1039,7 @@ ISCSI_FLAG_DATA_STATUS              = 0x01
 def DataIn(conn, req, rsp, buf, finish = True, offset = 0, residual = 0, status=True):
     s = conn.session
     rsp.bhs[0] = ISCSI_OP_SCSI_DATA_IN                          # opcode
-    rsp.bhs[16:20] = req.bhs[16:20]                             # ITT
+    rsp.bhs[16:20] = array.array('B' , req.bhs[16:20])                             # ITT
     rsp.set_ttt(0xffffffff)                                     # TTT
     rsp.set_exp_cmdsn(conn.CurExpCmdSn)                         # ExpCmdSn
     rsp.set_max_cmdsn(conn.CurExpCmdSn + s.cmd_wnd_size())      # MaxCmdSn  
@@ -1089,7 +1089,7 @@ def ScsiRsp(conn, req, rsp, status, residual=0):
     rsp.bhs[0] = ISCSI_OP_SCSI_CMD_RSP                          # opcode
     rsp.bhs[1] = ISCSI_FLAG_CMD_FINAL                           # flags
     rsp.bhs[3] = status                                         # status
-    rsp.bhs[16:20] = req.bhs[16:20]                             # ITT
+    rsp.bhs[16:20] = array.array('B', req.bhs[16:20])                             # ITT
     code = req.bhs[32]
     if residual < 0:
         rsp.bhs[1] |= ISCSI_FLAG_RESIDUAL_OVERFLOW
@@ -1240,7 +1240,7 @@ def ScsiCmdReq(conn, req, cmd):
     req.set_exp_len(cmd.exp_len)                                # ExpDataLen
     req.set_cmdsn(conn.CurCmdSN)                                # CmdSN
     req.set_exp_statsn(conn.next_statsn())                        # ExpStatSN
-    req.bhs[32:] = cmd.cdb[:]                                   # CDB
+    req.bhs[32:] = array.array('B',cmd.cdb[:])                                   # CDB
 
     if cmd.out_buf:
         req.data = cmd.out_buf[:cmd.next_len]
