@@ -13,9 +13,10 @@ https://sourceforge.net/projects/pytarget/
 - Customize disk physical and logical sector size
 
 ## Prerequisites
-- Python 2.7.10
+- Python 2.7
 
 ### Windows only
+- Install (Python 2.7.18)[https://www.python.org/ftp/python/2.7.18/python-2.7.18.amd64.msi]
 - Install `pywin32` module by running cmd.exe as admin and typing `C:\Python27\python -m pip install pywin32`
 - To access physical disks and volumes, pyTarget must be run as admin
 
@@ -156,12 +157,13 @@ Then the corresponding entry in config.xml will look like
 ...
 ```
 
-5. (Optionally) If some of the apps are using the source volume
-- TODO: describe how to change the mount points 
-- Restart
-- TODO: describe how to add the target to autostart (maybe to service with early loading group)
+6. (Optionaly) Use the step if you want to "shadow" an exisitng volume (use its original data and mountpoint, so apps after reboot will work with the iSCSI target based partition)
+- Open registry editor at `HKLM\SYSTEM\MountedDevices`, there is a database of mountpoints (drive-letter) to device GUIDs, find an entry corresponding to the shadowed volume, e.g. \DosDevices\F: for F: volume. 
+- The raw byte value for mount point stands for "DMIO:ID:" + volume GUID (as in GPT table). Change the value for a new GUID
+- Do next steps 7-9 at system startup, as system service. Note: optionally specify `LoadOrderGroup` for service so it boots before other services (that might be using the shadowed volume)
+- TODO: add more details and examples for this section
 
-6. Start the target:
+7. Start the target:
 - Open `cmd.exe` and navigate to pytarget folder, `src` subfolder
 - `C:\Python27\python.exe pyTarget.py`
 - Read 'main dev size: ' value in console (it will show the size of partition to create in bytes)
@@ -178,8 +180,10 @@ Then the corresponding entry in config.xml will look like
 - specify '32M' for partition offset
 - Divide "main dev size value" by 1024 to get value in KB, specify it for partition size like '+NNNK' , e.g. '+8351744K'
 - for other partition parameters use defaults
+- If needed to shadow an existing partition, set guid from p5) by 'x' and 'c' commands
 - type 'w' to write partition table to disk
-- After that a partition with data from original volume should appear
+- After that, a partition with data from original volume should appear
+
 10. To end the session (and disconnect the disk):
 - `iscsicli logouttarget <session-id>`, where <session-id>  is reported by `iscsicli reporttargetmappings`, e.g. `iscsicli logouttarget fffffa800626e018-4000013700000006`
 
