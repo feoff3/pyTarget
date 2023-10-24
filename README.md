@@ -15,10 +15,14 @@ https://sourceforge.net/projects/pytarget/
 ## Prerequisites
 - Python 2.7
 
-### Windows only
+### Windows
 - Install (Python 2.7.18)[https://www.python.org/ftp/python/2.7.18/python-2.7.18.amd64.msi]
 - Install `pywin32` module by running cmd.exe as admin and typing `C:\Python27\python -m pip install pywin32`
 - To access physical disks and volumes, pyTarget must be run as admin
+
+## How-tos
+
+### Windows
 
 #### Connect to a local physical disk
 1. Open cmd.exe as admin, start iscsi initiator by running 
