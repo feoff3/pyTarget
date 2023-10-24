@@ -7,9 +7,9 @@
 #    Create by Wu.Qing-xiu (2010-01-20)
 #
 
-from .intr.initiator import Initiator
-from .iscsi.iscsi_lib import *
-from .scsi.scsi_lib import *
+from intr.initiator import Initiator
+from iscsi.iscsi_lib import *
+from scsi.scsi_lib import *
 
 ###################################################################
 #                          Initiator Main

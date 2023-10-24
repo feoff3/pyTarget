@@ -2,7 +2,7 @@
 
 import os, shutil
 
-from .tagt.config import read_config
+from tagt.config import read_config
 
 def __remove_file(path):
     '''
