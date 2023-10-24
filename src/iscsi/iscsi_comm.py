@@ -134,7 +134,7 @@ def get_key_pair(pdu):
     for item in pair:
         if '=' in item:
             key, val = item.split('=')
-            if key_pair.has_key(key):
+            if key in key_pair:
                 val = 'Reject'
         elif item:
             # test request is continue

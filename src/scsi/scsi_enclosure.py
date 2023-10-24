@@ -453,7 +453,7 @@ class Enclosure(Lun):
         '''
         buf = None
         if IS_STATUS_PAGE(code):
-            if SES_STATUS_PAGE_HANDLE_URL.has_key(code):
+            if code in SES_STATUS_PAGE_HANDLE_URL:
                 buf = SES_STATUS_PAGE_HANDLE_URL[code](self)
             else:
                 DBG_WRN('Unknown or obsolete page %02x' % code)

@@ -295,7 +295,7 @@ def LoginRsp(conn, req, rsp, err_class, err_detail):
 
         # TargetPortalGroupTag 
         if not conn.TargetPortalGroupTag.is_ready() and \
-           not key_pair.has_key('TargetPortalGroupTag'):
+           not 'TargetPortalGroupTag' in key_pair:
             conn.TargetPortalGroupTag.ready()
             set_key_val(rsp, 'TargetPortalGroupTag', conn.target.portal)
             DBG_NEG('TargetPortalGroupTag =', conn.target.portal)
@@ -333,9 +333,9 @@ def LoginRsp(conn, req, rsp, err_class, err_detail):
                 identify = random.randint(0,0xFF)
                 challenge = build_challenge()
                 key = CHAP_A.check(req)
-                if (key_pair.has_key('CHAP_I') or
-                    key_pair.has_key('CHAP_C') or
-                    key_pair.has_key('CHAP_N')):
+                if ('CHAP_I' in key_pair or
+                    'CHAP_C' in key_pair or
+                    'CHAP_N' in key_pair):
                     err_class = ISCSI_STATUS_CLS_INITIATOR_ERR
                     err_detail = ISCSI_LOGIN_STATUS_AUTH_FAILED
                     DBG_WRN('detect CHAP_A/CHAP_C/CHAP_I/CHAP_N out of order')
@@ -438,7 +438,7 @@ def LoginRsp(conn, req, rsp, err_class, err_detail):
 
         # check NotUnderstood/Reject key
         for key in ISCSI_TARGET_ONLY_KEY:
-            if key_pair.has_key(key):
+            if key in key_pair:
                 if key_pair[key] == 'NotUnderstood' or \
                    key_pair[key] == 'Reject':
                     err_class = ISCSI_STATUS_CLS_INITIATOR_ERR
@@ -501,12 +501,12 @@ def LoginRsp(conn, req, rsp, err_class, err_detail):
                             DBG_NEG('FirstBurstLength =', s.FirstBurstLength.value)
                 else:
                     for key in ISCSI_DISCOVERY_IRRELEVANT_KEY:
-                        if key_pair.has_key(key):
+                        if key in key_pair:
                             set_key_val(rsp, key, 'Irrelevant')
             else:
                 # leading connection key
                 for key in ISCSI_LEADING_KEY:
-                    if key_pair.has_key(key):
+                    if key in key_pair:
                         err_class = ISCSI_STATUS_CLS_INITIATOR_ERR
                         err_detail = ISCSI_LOGIN_STATUS_INVALID_REQUEST
                         set_key_val(rsp, key, 'Reject')
@@ -525,7 +525,7 @@ def LoginRsp(conn, req, rsp, err_class, err_detail):
         # so we do not need to response login reject
         if finish:
             for key in key_pair:
-                if not ISCSI_KEY_PAIR.has_key(key):
+                if not (key in ISCSI_KEY_PAIR.has_key):
                     set_key_val(rsp, key, 'NotUnderstood')
 
         # return tsih at the last login response pdu
@@ -631,7 +631,7 @@ def TextRsp(conn, req, rsp):
         key_pair = get_key_pair(req)
 
         # MaxRecvDataSegmentLength
-        if key_pair.has_key('MaxRecvDataSegmentLength'):
+        if 'MaxRecvDataSegmentLength' in key_pair.has_key:
             if conn.type == SESSION_DISCOVERY:
                 DBG_WRN('detect text negotiating \'MaxRecvDataSegmentLength\' in discovery session')
                 reject = True
@@ -641,7 +641,7 @@ def TextRsp(conn, req, rsp):
                     reject = True
                     
         # HeaderDigest            
-        if key_pair.has_key('HeaderDigest'):
+        if 'HeaderDigest' in key_pair:
             key = conn.HeaderDigest.text_nego(req, rsp)
             if key == 'Reject':
                 reject = True
@@ -651,7 +651,7 @@ def TextRsp(conn, req, rsp):
                 conn.Digest &= ~DIGEST_HEAD
                 
         # DataDigest
-        if key_pair.has_key('DataDigest'):
+        if 'DataDigest' in key_pair:
             key = conn.DataDigest.text_nego(req, rsp)
             if key == 'Reject':
                 reject = True
@@ -661,7 +661,7 @@ def TextRsp(conn, req, rsp):
                 conn.Digest &= ~DIGEST_DATA
 
         # SendTargets        
-        if key_pair.has_key('SendTargets'):
+        if 'SendTargets' in key_pair:
             key = key_pair['SendTargets']
             if key == 'All':
                 if conn.type == SESSION_DISCOVERY:
@@ -694,7 +694,7 @@ def TextRsp(conn, req, rsp):
     elif f_bit:
         # check not understood key
         for key in key_pair:
-            if not ISCSI_KEY_PAIR.has_key(key):
+            if not ( key in ISCSI_KEY_PAIR):
                 set_key_val(rsp, key, 'NotUnderstood')
         rsp.bhs[1] = ISCSI_FLAG_CMD_FINAL
         rsp.set_ttt(0xffffffff)

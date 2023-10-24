@@ -1163,7 +1163,7 @@ def exe_scsi_cmd(cmd):
     if Check_EXE_Cmd(cmd):
         return
 
-    if __SCSI_CMD_URL.has_key(code):
+    if code in __SCSI_CMD_URL:
         __SCSI_CMD_URL[code](cmd)
     else:
         DBG_WRN('Detect unsupported scsi command (%d)' % code)

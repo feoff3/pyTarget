@@ -125,13 +125,13 @@ class Config(xml.sax.handler.ContentHandler):
             self.__l.path = asc(attributes['path'])
             self.__l.cap = str_2_value(asc(attributes['capacity']))
             self.__l.type = str_2_value(asc(attributes['type']))
-            if attributes.has_key('media'):
+            if 'media' in attributes:
                 self.__l.media = str_2_value(asc(attributes['media']))
-            if attributes.has_key('lsector'):
+            if 'lsector' in attributes:
                 self.__l.logical_sector = str_2_value(asc(attributes['lsector']))
-            if attributes.has_key('psector'):
+            if 'psector' in attributes:
                 self.__l.physical_sector = str_2_value(asc(attributes['psector']))
-            if attributes.has_key('parms'):
+            if 'parms' in attributes:
                 self.__l.parms = asc(attributes['parms'])
             self.__h.lun.append(copy.deepcopy(self.__l))
         elif name == 'item':
@@ -194,5 +194,6 @@ def read_config(path):
         parser.parse(path)
     except:
         DBG_ERR(__file__, line(), 'Read %s FAILED' % path)
+        DBG_EXC()
         return None
     return config

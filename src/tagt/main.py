@@ -16,7 +16,7 @@ from scsi.scsi_disk import Disk
 from scsi.scsi_tape import Tape
 from scsi import scsi_proto as sp
 from scsi.scsi_enclosure import NEW_Enclosure
-from config import read_config
+from tagt.config import read_config
 from comm.debug import *
 from comm.dev_file import DevFile
 import platform

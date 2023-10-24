@@ -155,7 +155,7 @@ SCSI_ALLOCATION_LEN_LIST = {
 
 def ALLOCATE_LEN(x):
     from comm.stdlib import array_2_hex
-    if SCSI_ALLOCATION_LEN_LIST.has_key(x[0]):
+    if x[0] in SCSI_ALLOCATION_LEN_LIST:
         ran = SCSI_ALLOCATION_LEN_LIST[x[0]]
         return array_2_hex(x, ran[0], ran[1])
     return -1

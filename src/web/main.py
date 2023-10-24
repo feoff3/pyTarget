@@ -1,5 +1,5 @@
 import os
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from comm.stdlib import *
 
 

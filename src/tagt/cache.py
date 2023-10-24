@@ -11,7 +11,6 @@ from scsi.scsi_lib import *
 from iscsi.iscsi_lib import *
 from comm.comm_list import *
 import threading
-from Queue import Queue
 #
 # scsi task status
 #
@@ -95,14 +94,6 @@ class TagtCache(List):
         self.unlock()
         return ret
 
-    def _read_worker(self):
-        while True:
-            item = self.read_ops_queue.get()
-            if not item:
-                break
-            self._handle_read(item[0], item[1], item[2], item[3])
-            self.read_ops_queue.task_done()
-        print("Read worker stopped")
 
     def _handle_read_no_buff(self, conn, req, cmd):
         if cmd:

@@ -102,7 +102,7 @@ def IS_TYPE(cmd, tc):
     __cmd_list = []
 
     # simulate scsi command
-    if scsi_error_type_desc.has_key(tc.type) and tc.type >= SCSI_CMD_BASE:
+    if tc.type in scsi_error_type_desc and tc.type >= SCSI_CMD_BASE:
         return (tc.type - SCSI_CMD_BASE) == cmd.cdb[0]
 
     #    DISK_HANG_ON_READ
