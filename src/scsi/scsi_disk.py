@@ -62,7 +62,7 @@ class Disk(Lun):
         '''
         if force or self.dev.size() < (int(self.capacity) * self.sector_size):
             #TODO: now it works for files, fix that for non-expandable devices
-            buf = '\x00' * self.sector_size
+            buf = b'\x00' * self.sector_size
             i = int(0)
             while i < self.capacity + 1:
                 if self.dev.write(int(i) * self.sector_size, buf) == False: 

@@ -243,7 +243,7 @@ class WinDev():
                 writeOvlap.hEvent = win32event.CreateEvent(None, 1, 0, None)
                 writeOvlap.Offset = offset & 0xFFFFFFFF
                 writeOvlap.OffsetHigh = offset >> 32
-                rc, bwr = win32file.WriteFile(self.handle,buf,writeOvlap)
+                rc, bwr = win32file.WriteFile(self.handle,bytearray(buf),writeOvlap)
                 if not self.async_write_mode:
                     win32event.WaitForSingleObject(writeOvlap.hEvent, win32event.INFINITE)
                     win32api.CloseHandle(writeOvlap.hEvent)
@@ -251,7 +251,7 @@ class WinDev():
                     self.pending_io[writeOvlap] = buf
                 return True
         except:
-            DBG_WRN('raw win disk (%s) write FAILED(offset=%d, length=%d)' % (self.path, offset, len(buf)))
+            DBG_ERR('raw win disk (%s) write FAILED(offset=%d, length=%d)' % (self.path, offset, len(buf)))
             DBG_EXC()
             return False
 

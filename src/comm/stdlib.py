@@ -124,5 +124,5 @@ def align4(val):
     if val & 0x03: return (4 - val & 0x03)
     return 0
 
-def asc(str):
-    return str.encode('ascii','ignore')
+def asc(string):
+    return string
