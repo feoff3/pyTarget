@@ -118,8 +118,8 @@ def SCSI_LBA(x):
     y = CDB_SIZE(x[0])
     if y == 6:    ret = ((x[1] << 16) + (x[2] << 8) + x[3]) & 0x1fffff
     elif y == 10: ret = (x[2] << 24) + (x[3] << 16) + (x[4] << 8) + x[5]
-    elif y == 12: ret = (long(x[2]) << 24) + (long(x[3]) << 16) + (x[4] << 8) + x[5]
-    elif y == 16: ret = (long(x[2])<<56)+(long(x[3])<<48)+(long(x[4])<<40)+(long(x[5])<<32)+(long(x[6])<<24)+(x[7]<<16)+(x[8]<<8)+x[9]
+    elif y == 12: ret = (int(x[2]) << 24) + (int(x[3]) << 16) + (x[4] << 8) + x[5]
+    elif y == 16: ret = (int(x[2])<<56)+(int(x[3])<<48)+(int(x[4])<<40)+(int(x[5])<<32)+(int(x[6])<<24)+(x[7]<<16)+(x[8]<<8)+x[9]
     return ret
 
 # SBC scsi blocks
@@ -129,7 +129,7 @@ def SBC_LEN(x):
     if y == 6:    ret = x[4]
     elif y == 10: ret = (x[7] << 8) + x[8]
     elif y == 12: ret = (x[6] << 24) + (x[7] << 16) + (x[8] << 8) + x[9]
-    elif y == 16: ret = long(long(x[10]) << 24)+ (x[11] << 16)+ (x[12] << 8)+ x[13]
+    elif y == 16: ret = int(int(x[10]) << 24)+ (x[11] << 16)+ (x[12] << 8)+ x[13]
     return int(ret)
 
 # SSC scsi blocks

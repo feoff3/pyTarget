@@ -197,7 +197,7 @@ class WinDev():
         duration = win32event.INFINITE
         if wait == False:
             duration = 0
-        for k,v in self.pending_io.iteritems():
+        for k,v in self.pending_io.items():
             if 0 == win32event.WaitForSingleObject(k.hEvent, duration):
                 completed.append(k)
                 win32api.CloseHandle(k.hEvent)
@@ -208,7 +208,7 @@ class WinDev():
         while True:
             current_count = 0
             wait_list = list()
-            for k,v in self.pending_io.iteritems():
+            for k,v in self.pending_io.items():
                 if 0 == win32event.WaitForSingleObject(k.hEvent, 0):
                     continue
                 current_count += 1

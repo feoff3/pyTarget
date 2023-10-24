@@ -7,11 +7,11 @@
 #    Create by Wu.Qing-xiu (2009-09-27)
 #
 import time
-from comm.service_thread import ServiceThread
-from tagt.main import iscsi_target_service
-from isns.main import IsnsService
-from web.main import WebService
-from comm.debug import DBG_INF
+from .comm.service_thread import ServiceThread
+from .tagt.main import iscsi_target_service
+from .isns.main import IsnsService
+from .web.main import WebService
+from .comm.debug import DBG_INF
 
 
 ###################################################################
@@ -20,7 +20,7 @@ from comm.debug import DBG_INF
 
 if __name__ == '__main__':
 
-    from comm.version import MY_NAME, MY_VERSION, MY_DATE
+    from .comm.version import MY_NAME, MY_VERSION, MY_DATE
     DBG_INF(MY_NAME, MY_VERSION, MY_DATE)
 
     #

@@ -39,9 +39,8 @@ def __debug_info(level, *msg):
         else:
             fd = sys.stdout
         __console_lock.acquire()
-        # if need to output time, open next line 
-        # print >> fd, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
-        for item in msg: print(item,end=' ',file=fd)
+        for item in msg: 
+            print(item,end=' ',file=fd)
         print("",file=fd)
         if PRINT_TRACE:
             traceback.print_stack(file=fd)

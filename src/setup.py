@@ -1,6 +1,6 @@
 # setup.py
 
-from comm.version import *
+from .comm.version import *
 from distutils.core import setup
 import py2exe, os,  shutil
 

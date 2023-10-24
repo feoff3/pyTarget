@@ -525,7 +525,7 @@ def LoginRsp(conn, req, rsp, err_class, err_detail):
         # so we do not need to response login reject
         if finish:
             for key in key_pair:
-                if not (key in ISCSI_KEY_PAIR.has_key):
+                if not (key in ISCSI_KEY_PAIR):
                     set_key_val(rsp, key, 'NotUnderstood')
 
         # return tsih at the last login response pdu
@@ -631,7 +631,7 @@ def TextRsp(conn, req, rsp):
         key_pair = get_key_pair(req)
 
         # MaxRecvDataSegmentLength
-        if 'MaxRecvDataSegmentLength' in key_pair.has_key:
+        if 'MaxRecvDataSegmentLength' in key_pair:
             if conn.type == SESSION_DISCOVERY:
                 DBG_WRN('detect text negotiating \'MaxRecvDataSegmentLength\' in discovery session')
                 reject = True
@@ -1355,6 +1355,6 @@ def ScsiCmdRsp(conn, req, rsp):
                 rsp.set_data_len(len(rsp.data))
         cmd.state = cah.SCSI_TASK_FREE
     else:
-        raise 'scsi command execute abnormally!'
+        raise Exception('scsi command execute abnormally!')
 
     return ret
