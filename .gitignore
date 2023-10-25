@@ -164,3 +164,5 @@ cython_debug/
 .vs/
 src/Disk-1
 src/Disk-2
+src/pyTarget.build/
+src/pyTarget.dist/

@@ -26,12 +26,15 @@ class Disk(Lun):
         self.sector_size = logic_sector
         self.physical_sector_size = phys_sector
         self.__defect_list_init()
+        self.total_size_cached = self.dev.size()
 
 
-    def get_capacity(self):
+    def get_capacity(self, force_upd = True):
         if self.default_capacity:
             return int(self.default_capacity)
-        return int(self.dev.size() / self.sector_size)
+        if force_upd == True:
+            self.total_size_cached = self.dev.size() / self.sector_size
+        return int(self.total_size_cached)
 
     capacity = property(get_capacity)
 
@@ -51,7 +54,7 @@ class Disk(Lun):
         '''
         check if address out of range.
         '''
-        return (lba + len > self.capacity)
+        return (lba + len > self.get_capacity(False))
 
 
     def initial(self, force=False):

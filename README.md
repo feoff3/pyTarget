@@ -1,5 +1,5 @@
 # pyTarget
-iSCSI target for Python 2.7
+iSCSI target for Python 3
 
 This is a fork of original pyTarget project from SourceForge
 https://sourceforge.net/projects/pytarget/
@@ -11,13 +11,15 @@ https://sourceforge.net/projects/pytarget/
 - Ability to use volumes (with emulated GPT) as data source
 - 2TB+ disks support
 - Customize disk physical and logical sector size
+- Ported to Python 3
 
 ## Prerequisites
-- Python 2.7.10
+- Python 3
 
 ### Windows only
 - Install `pywin32` module by running cmd.exe as admin and typing `C:\Python27\python -m pip install pywin32`
 - To access physical disks and volumes, pyTarget must be run as admin
+
 
 #### Connect to a local physical disk
 1. Open cmd.exe as admin, start iscsi initiator by running 
@@ -183,3 +185,26 @@ Then the corresponding entry in config.xml will look like
 10. To end the session (and disconnect the disk):
 - `iscsicli logouttarget <session-id>`, where <session-id>  is reported by `iscsicli reporttargetmappings`, e.g. `iscsicli logouttarget fffffa800626e018-4000013700000006`
 
+## Accelerate with Nuitka
+When number of requests exceed 8K per second, CPU becomes a bottleneck and standard Python impl becomes too slow.
+There are certain ways to accelerate a Python applications. One of them is to use one of frameworks like Cython, or more modern Nuitka to convert some of python code to C binary and execute it natively thus saving CPU.
+
+### Install Nuitka
+
+On build computer to:
+`python -m pip install -U nuitka`
+
+### Build pyTarged with Nuitka
+
+Navigate to `src` directory
+
+`python -m nuitka --standalone --follow-imports pyTarget.py`
+
+The result will be output to `pyTarget.dist` directory.
+Copy this directory to the target computer or embed into an installer.
+
+### Run
+
+Run `pyTarget.dist/pyTarget.exe`. Keep in mind that config xml should be created and reside inside `pyTarget.dist` directory.
+
+Note: Nuitka doesn't provide any significant improvement in performance, but at least provide a way to redist the target
