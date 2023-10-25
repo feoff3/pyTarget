@@ -30,8 +30,8 @@ class Disk(Lun):
 
     def get_capacity(self):
         if self.default_capacity:
-            return self.default_capacity
-        return self.dev.size() / self.sector_size
+            return int(self.default_capacity)
+        return int(self.dev.size() / self.sector_size)
 
     capacity = property(get_capacity)
 
