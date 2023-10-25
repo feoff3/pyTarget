@@ -29,7 +29,7 @@ class PDU():
     class for iscsi pdu
     '''
     def __init__(self):
-        self.bhs = [0] * ISCSI_BHS_SIZE
+        self.bhs = bytearray(ISCSI_BHS_SIZE)
         self.ahs = None
         self.data = b''
         self.state = PDU_STATE_GOOD
