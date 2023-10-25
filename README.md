@@ -18,8 +18,8 @@ https://sourceforge.net/projects/pytarget/
 
 
 ### Windows
-- Install (Python 2.7.18)[https://www.python.org/ftp/python/2.7.18/python-2.7.18.amd64.msi]
-- Install `pywin32` module by running cmd.exe as admin and typing `C:\Python27\python -m pip install pywin32`
+- Install Python 3, ensure it is added to PATH during installation
+- Install `pywin32` module by running cmd.exe as admin and typing `python -m pip install pywin32`
 - To access physical disks and volumes, pyTarget must be run as admin
 
 ## How-tos
@@ -66,7 +66,7 @@ Then the corresponding entry in config.xml will look like
 
 5. Start the target:
 - Open `cmd.exe` and navigate to pytarget folder, `src` subfolder
-- `C:\Python27\python.exe pyTarget.py`
+- `python.exe pyTarget.py`
 6. Start iscsi intiator to connect to target, from new cmd.exe console (change `127.0.0.1` to target IP address if it is installed on other PC in the network):
 - `iscsicli QAddTargetPortal 127.0.0.1`
 - `iscsicli qlogintarget iqn.2006-11.1.python.iscsi.target-1`
@@ -111,7 +111,7 @@ Then the corresponding entry in config.xml will look like
 
 5. Start the target:
 - Open `cmd.exe` and navigate to pytarget folder, `src` subfolder
-- `C:\Python27\python.exe pyTarget.py`
+- `python.exe pyTarget.py`
 6. Start iscsi intiator to connect to target, from new cmd.exe console (change `127.0.0.1` to target IP address if it is installed on other PC in the network):
 - `iscsicli QAddTargetPortal 127.0.0.1`
 - `iscsicli qlogintarget iqn.2006-11.1.python.iscsi.target-1`
@@ -171,7 +171,7 @@ Then the corresponding entry in config.xml will look like
 
 7. Start the target:
 - Open `cmd.exe` and navigate to pytarget folder, `src` subfolder
-- `C:\Python27\python.exe pyTarget.py`
+- `python.exe pyTarget.py`
 - Read 'main dev size: ' value in console (it will show the size of partition to create in bytes)
 
 8. Start iscsi intiator to connect to target, from new cmd.exe console (change `127.0.0.1` to target IP address if it is installed on other PC in the network):
