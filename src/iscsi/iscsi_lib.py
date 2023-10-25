@@ -31,7 +31,7 @@ class PDU():
     def __init__(self):
         self.bhs = [0] * ISCSI_BHS_SIZE
         self.ahs = None
-        self.data = ''
+        self.data = b''
         self.state = PDU_STATE_GOOD
 
     # get ops

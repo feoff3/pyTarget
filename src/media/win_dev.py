@@ -243,9 +243,12 @@ class WinDev():
                 writeOvlap.hEvent = win32event.CreateEvent(None, 1, 0, None)
                 writeOvlap.Offset = offset & 0xFFFFFFFF
                 writeOvlap.OffsetHigh = offset >> 32
-                rc, bwr = win32file.WriteFile(self.handle,bytearray(buf),writeOvlap)
+                rc, bwr = win32file.WriteFile(self.handle,buf,writeOvlap)
                 if not self.async_write_mode:
                     win32event.WaitForSingleObject(writeOvlap.hEvent, win32event.INFINITE)
+                    rc = writeOvlap.Internal
+                    if rc != 0:
+                        DBG_WRN("Overlapped write ended with error code " + str(rc))
                     win32api.CloseHandle(writeOvlap.hEvent)
                 else:
                     self.pending_io[writeOvlap] = buf
@@ -280,7 +283,11 @@ class WinDev():
                 (rc , buf) = win32file.ReadFile(self.handle,length,readOvlap)
                 if not self.async_read_mode:
                     win32event.WaitForSingleObject(readOvlap.hEvent, win32event.INFINITE)
+                    rc = readOvlap.Internal
+                    if rc != 0:
+                        DBG_WRN("Overlapped read ended with error code " + str(rc))
                     win32api.CloseHandle(readOvlap.hEvent)
+                    return buf.tobytes()
                 else:
                     buf = WinDelayedBuffer(buf, length , readOvlap.hEvent , readOvlap) 
                 return buf

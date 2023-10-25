@@ -116,10 +116,10 @@ def CDB_SIZE(code):
 def SCSI_LBA(x):
     ret = -1
     y = CDB_SIZE(x[0])
-    if y == 6:    ret = ((x[1] << 16) + (x[2] << 8) + x[3]) & 0x1fffff
-    elif y == 10: ret = (x[2] << 24) + (x[3] << 16) + (x[4] << 8) + x[5]
-    elif y == 12: ret = (int(x[2]) << 24) + (int(x[3]) << 16) + (x[4] << 8) + x[5]
-    elif y == 16: ret = (int(x[2])<<56)+(int(x[3])<<48)+(int(x[4])<<40)+(int(x[5])<<32)+(int(x[6])<<24)+(x[7]<<16)+(x[8]<<8)+x[9]
+    if y == 6:    ret = ((int(x[1]) << 16) + (int(x[2]) << 8) + x[3]) & 0x1fffff
+    elif y == 10: ret = (int(x[2]) << 24) + (int(x[3]) << 16) + (int(x[4]) << 8) + x[5]
+    elif y == 12: ret = (int(x[2]) << 24) + (int(x[3]) << 16) + (int(x[4]) << 8) + x[5]
+    elif y == 16: ret = (int(x[2])<<56)+(int(x[3])<<48)+(int(x[4])<<40)+(int(x[5])<<32)+(int(x[6])<<24)+(int(x[7])<<16)+(x[8]<<8)+x[9]
     return ret
 
 # SBC scsi blocks

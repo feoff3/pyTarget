@@ -99,7 +99,7 @@ class TagtCache(List):
         if cmd:
                 rsp = PDU()
                 ScsiRsp(conn, req, rsp, cmd.status, 0)
-                rsp.data = ''
+                rsp.data = b''
                 #
                 # sense valid, set sense data
                 #

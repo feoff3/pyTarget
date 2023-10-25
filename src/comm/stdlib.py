@@ -9,6 +9,7 @@
 import os, struct
 from string import *
 import array
+import string
 
 def do_pack(ary):
     return struct.pack('B'*len(ary), *ary[:])
@@ -126,3 +127,25 @@ def align4(val):
 
 def asc(string):
     return string
+
+
+DIGITS = string.digits + string.ascii_lowercase
+VALUES = {c: d for d, c in enumerate(DIGITS)}
+
+def isdigit(s, base=10):
+    return s in DIGITS[:base]
+
+def atoi(x : str, base : int = 10):
+    if not 2 <= base <= 36:
+        raise ValueError("Only 2 <= base <= 36 currently supported")
+    sign = 1
+    if x.startswith(("+", "-")):
+        if x[0] == "-":
+            sign = -1
+        x = x[1:]
+    value = 0
+    for exp, c in enumerate(reversed(x)):
+        if c not in VALUES or VALUES[c] >= base:
+            raise ValueError(f"{c} is not a valid digit in base {base}")
+        value += VALUES[c] * base ** exp
+    return sign * value

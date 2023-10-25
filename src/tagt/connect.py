@@ -155,6 +155,10 @@ class Connect():
         # MaxRecvSegmentLength use default value.
         req = self.recv()
         if req == None or OPCODE(req) != ISCSI_OP_LOGIN:
+            DBG_WRN("cannot get login PDU " + str(req))
+            if req:
+                DBG_WRN("Expected opcode " + str(ISCSI_OP_LOGIN) + " got:" + str(OPCODE(req)))
+                DBG_WRN("PDU: " + repr(req.bhs))
             return False
 
         #==============================================================
@@ -397,11 +401,6 @@ class Connect():
         '''
         if self.login_handle():
             self.login_finish()
-            #import cProfile
-            #import pstats
-            #cProfile.runctx("self.Task()" , globals() , locals(), "my_func_stats")
-            #p = pstats.Stats("my_func_stats")
-            #p.sort_stats("cumulative").print_callers()
             self.Task()
         self.Stop()
 
@@ -417,7 +416,6 @@ class Connect():
             self.sock.time_out(self.nopin_interval)
 
         while self.state == ISCSI_FULL_FEATURE_PHASE:
-
             # remember to check connection state,
             # current connect may be closed by other connect.
             req = None

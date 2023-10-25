@@ -8,7 +8,7 @@
 
 import socket as socket_module
 from socket import *
-from comm.debug import DBG_ERR, DBG_WRN
+from comm.debug import DBG_ERR, DBG_WRN, DBG_EXC
 import select
 
 SOCKET_TCP_SERVER = 1
@@ -110,6 +110,7 @@ class CommSock():
                 self.__cli_sock.sendto(buf, self.__cli_addr)
             return True
         except:
+            DBG_EXC("failed to send response")
             return False
 
 
@@ -120,13 +121,14 @@ class CommSock():
         @return: data buffer for success,
                  None for failed
         '''
-        buf = ''
+        buf = b''
         while (len(buf) < length):
             try:
                 if (self.type == SOCKET_TCP_SERVER or
                     self.type == SOCKET_TCP_CLIENT):
                     rcv = self.__cli_sock.recv(length - len(buf))
                     if rcv != None and len(rcv) == 0:
+                        DBG_WRN("Empty packet detected, closing the socket")
                         return None  # close socket
                     buf += rcv
                 elif (self.type == SOCKET_UDP_SERVER or
@@ -135,6 +137,7 @@ class CommSock():
             except socket_module.timeout:
                 return buf
             except:
+                DBG_EXC("Failed to get data from socket")
                 return None
         return buf
 

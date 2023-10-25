@@ -138,7 +138,7 @@ class IscsiSock(CommSock):
         if pdu.data and len(pdu.data) > 0:
             data = pdu.data
             if align4(pdu.get_data_len()):
-                data += '\x00' * align4(pdu.get_data_len())
+                data += b'\x00' * align4(pdu.get_data_len())
             if digest & DIGEST_DATA:
                 data += crc32c.crc32c(data)
             buf += data
