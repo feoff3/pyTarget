@@ -16,7 +16,7 @@ from scsi.scsi_disk import Disk
 from scsi.scsi_tape import Tape
 from scsi import scsi_proto as sp
 from scsi.scsi_enclosure import NEW_Enclosure
-from config import read_config
+from tagt.config import read_config
 from comm.debug import *
 from comm.dev_file import DevFile
 import platform
@@ -43,7 +43,7 @@ def _create_target_media(l):
     if (l.media & SOURCE_MEDIA_WINDEV_MASK) > 0:
         if platform.system() == "Windows":
             import media.win_dev
-            windev = media.win_dev.WinDev(l.path , l.media == SOURCE_MEDIA_WINDRIVE, True)
+            windev = media.win_dev.WinDev(l.path , l.media == SOURCE_MEDIA_WINDRIVE, True, True)
             if l.media == SOURCE_MEDIA_WINVOL_EMULATED_DISK_LAYOUT:
                 import media.emulated_layout_dev
                 #TODO: check parms format, return error

@@ -15,6 +15,7 @@ PDU_STATE_HEAD_FAILED                       = 0x02
 PDU_STATE_DATA_FAILED                       = 0x03
 PDU_STATE_PADDING_FAILED                    = 0x04
 PDU_STATE_FORMAT_FAILED                     = 0x05
+PDU_STATE_SOCK_TIMEOUT                      = 0x06
 
 
 def iscsi_do_recovery(conn, req):
@@ -29,7 +30,7 @@ def iscsi_do_recovery(conn, req):
 
     #
     # initiator socket failed (exit connect)
-    # return False for terminate corrent connection.
+    # return False for terminate current connection.
     #
     if req.state == PDU_STATE_SOCK_FAILED:
 #        DBG_WRN('Peer socket is invalid.')

@@ -155,6 +155,10 @@ class Connect():
         # MaxRecvSegmentLength use default value.
         req = self.recv()
         if req == None or OPCODE(req) != ISCSI_OP_LOGIN:
+            DBG_WRN("cannot get login PDU " + str(req))
+            if req:
+                DBG_WRN("Expected opcode " + str(ISCSI_OP_LOGIN) + " got:" + str(OPCODE(req)))
+                DBG_WRN("PDU: " + repr(req.bhs))
             return False
 
         #==============================================================
@@ -412,16 +416,30 @@ class Connect():
             self.sock.time_out(self.nopin_interval)
 
         while self.state == ISCSI_FULL_FEATURE_PHASE:
-
             # remember to check connection state,
             # current connect may be closed by other connect.
-            req = self.recv()
+            req = None
+            self.session.scsi_cmd_list.process_async_read_requests(wait=False)
+            if not self.sock.has_pending_data():
+                # we are going to block on recv so instead of waiting for recv, wait on disks
+                self.session.scsi_cmd_list.process_async_read_requests(wait=True)
+            try:
+                req = self.recv()
+            except:
+                DBG_EXC()
+            
             if self.state == ISCSI_LOGOUT_PHASE:
                 return
-
+            
+            if not req:
+                 DBG_WRN("Crticial problem within the session, aborting...")
+                 break
             # check and do error recover if necessary.
             # (current support error recovery level = 2)
             if req.state != PDU_STATE_GOOD:
+                if req.state == PDU_STATE_SOCK_TIMEOUT:
+                    continue
+                DBG_WRN("Problem within the session, recovering...")
                 if iscsi_do_recovery(self, req):
                     continue
                 else:

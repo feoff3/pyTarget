@@ -218,7 +218,7 @@ def __ReportLunRsp(cmd):
     limit = ALLOCATE_LEN(cmd.cdb) 
 
     cnt = len(lun_list)
-    buf = '\x00' * (cnt + 1) * 8
+    buf = b'\x00' * (cnt + 1) * 8
     buf = hex_2_byte(buf, 0, 4, cnt * 8)
     lock.acquire()
     for i in range(cnt):
@@ -295,9 +295,9 @@ def __InquiryRsp(cmd):
         data[0] = lun.type                          # Peripheral
         data[4] = 58 - 5                            # Additional Length
         data[7] = 0x32                              # Flags: 0x32  Sync  CmdQue
-        data[8:16]  = do_unpack(DEVICE_VENDOR)      # Vendor Id
-        data[16:32] = do_unpack(DEVICE_PRODUCT)     # Product Id
-        data[32:36] = do_unpack(DEVICE_VERSION)     # Product Revision Level
+        data[8:16]  = do_unpack(bytearray(DEVICE_VENDOR, encoding='ascii'))      # Vendor Id
+        data[16:32] = do_unpack(bytearray(DEVICE_PRODUCT, encoding='ascii'))     # Product Id
+        data[32:36] = do_unpack(bytearray(DEVICE_VERSION, encoding='ascii'))     # Product Revision Level
 
         if is_disk(lun):
             data[1] = 0x00                          # Flags
@@ -1163,7 +1163,7 @@ def exe_scsi_cmd(cmd):
     if Check_EXE_Cmd(cmd):
         return
 
-    if __SCSI_CMD_URL.has_key(code):
+    if code in __SCSI_CMD_URL:
         __SCSI_CMD_URL[code](cmd)
     else:
         DBG_WRN('Detect unsupported scsi command (%d)' % code)

@@ -59,7 +59,7 @@ def Diagnostic_Supported_Page(elc):
     Supported Diagnostic Pages diagnostic page
     '''
     head = [0] * 4
-    data = range(SES_OTHER_PAGE)
+    data = list(range(SES_OTHER_PAGE))
     SET_SES_LENGTH(head, len(data))                             # not include first 4 bytes
     head += data
     return do_pack(head)
@@ -196,7 +196,7 @@ def SES_Supported_SES_Diangostic_Page(elc):
     '''
     head = [0] * 4
     head[0] = SES_SUPPORTED_SES_DIAGNOSTIC_PAGES_PAGE
-    head += range(1, SES_OTHER_PAGE)
+    head += list(range(1, SES_OTHER_PAGE))
     SET_SES_LENGTH(head, len(head))
     while len(head) % 4:
         head += [0]

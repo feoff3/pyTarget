@@ -6,9 +6,10 @@
 #    Create by Wu.Qing-xiu (2009-09-27)
 #
 
+import socket as socket_module
 from socket import *
-from comm.debug import DBG_ERR, DBG_WRN
-
+from comm.debug import DBG_ERR, DBG_WRN, DBG_EXC
+import select
 
 SOCKET_TCP_SERVER = 1
 SOCKET_TCP_CLIENT = 2
@@ -109,6 +110,7 @@ class CommSock():
                 self.__cli_sock.sendto(buf, self.__cli_addr)
             return True
         except:
+            DBG_EXC("failed to send response")
             return False
 
 
@@ -119,19 +121,23 @@ class CommSock():
         @return: data buffer for success,
                  None for failed
         '''
-        buf = ''
+        buf = b''
         while (len(buf) < length):
             try:
                 if (self.type == SOCKET_TCP_SERVER or
                     self.type == SOCKET_TCP_CLIENT):
                     rcv = self.__cli_sock.recv(length - len(buf))
                     if rcv != None and len(rcv) == 0:
+                        DBG_WRN("Empty packet detected, closing the socket")
                         return None  # close socket
                     buf += rcv
                 elif (self.type == SOCKET_UDP_SERVER or
                       self.type == SOCKET_UDP_CLIENT):
                     buf += self.__cli_sock.recvfrom(length - len(buf))
+            except socket_module.timeout:
+                return buf
             except:
+                DBG_EXC("Failed to get data from socket")
                 return None
         return buf
 
@@ -160,3 +166,14 @@ class CommSock():
         @param sec: timeout in second
         '''
         self.__cli_sock.settimeout(sec)
+
+    def has_pending_data(self):
+        '''
+        gets if data is available to be read
+        '''
+        rlist=[self.__cli_sock]
+        read_sockets, write_sockets, error_sockets = select.select(rlist, [], [], 0)
+        if read_sockets:
+            if self.__cli_sock in read_sockets:
+                return True
+        return False

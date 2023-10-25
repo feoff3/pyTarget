@@ -24,21 +24,22 @@ def IMD_VAL(conn):
     return conn.session.ImmediateData.value
 
 
-def get_key_val(pdu, key):
+def get_key_val(pdu, keystr):
     '''
     @return: None for not exist
              Reject for detecting multiply same keys
              other for success
     '''
+    key = bytearray(keystr , encoding="ascii")
     beg = pdu.data.find(key)
     if beg < 0:
         return None
-    end = pdu.data.find('\x00', beg + len(key) + 1)
+    end = pdu.data.find(b'\x00', beg + len(key) + 1)
     if end < 0:
-        return pdu.data[beg + len(key) + 1:]
+        return str(pdu.data[beg + len(key) + 1:], encoding="ascii")
     if pdu.data[end:].find(key) >= 0:
         return 'Reject' 
-    return pdu.data[beg + len(key) + 1:end]
+    return str(pdu.data[beg + len(key) + 1:end], encoding="ascii")
 
 
 def set_key_val(pdu, key, val):
@@ -53,6 +54,7 @@ def set_key_val(pdu, key, val):
     elif type(val) is type(True):
         buf = '%s=%s\0' % (key, bool_2_str(val))
     if buf:
+        buf = bytearray(buf , encoding='ascii' , errors='strict')
         pdu.data += buf
         pdu.set_data_len(pdu.get_data_len() + len(buf))
 
@@ -130,18 +132,20 @@ def get_key_pair(pdu):
     get key value pair
     '''
     key_pair = {}
-    pair = pdu.data.split('\0')
+    pair = pdu.data.split(b'\0')
     for item in pair:
-        if '=' in item:
-            key, val = item.split('=')
-            if key_pair.has_key(key):
+        if b'=' in item:
+            key, val = item.split(b'=')
+            key = str(key, encoding="ascii", errors='strict')
+            val = str(val, encoding="ascii", errors='strict')
+            if key in key_pair:
                 val = 'Reject'
         elif item:
             # test request is continue
             if (OPCODE(pdu) == ISCSI_OP_TEXT and pdu.bhs[1] & 0x40):
                 continue
             else:
-                key = item ; val = 'Reject'
+                key = str(item, encoding="ascii", errors='strict'); val = 'Reject'
         else:
             continue
         key_pair.update({key:val})

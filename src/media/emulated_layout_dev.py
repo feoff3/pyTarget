@@ -14,9 +14,9 @@ class EmulatedLayoutDev():
         self.footer_dev = footer_dev
         self.__lock = threading.Lock()
         self.open()
-        print("header dev size: " + str(header_dev.size()))
-        print("main dev size: " + str(main_dev.size()))
-        print("footer dev size: " + str(footer_dev.size()))
+        print(("header dev size: " + str(header_dev.size())))
+        print(("main dev size: " + str(main_dev.size())))
+        print(("footer dev size: " + str(footer_dev.size())))
 
     def __del__(self):
         self.close()

@@ -6,11 +6,11 @@
 #    Create by Wu.Qing-xiu (2009-09-26)
 #    Modify by Wu.Qing-xiu (2010-4-10)
 #
-
+from comm.delayed_buffer import *
 from scsi.scsi_lib import *
 from iscsi.iscsi_lib import *
 from comm.comm_list import *
-
+import threading
 #
 # scsi task status
 #
@@ -31,7 +31,10 @@ class TagtCache(List):
         cache constructor
         '''
         List.__init__(self)
+        self.read_pending_list = list()
 
+    def __del__(self):
+        self.process_async_read_requests(True)
 
     def push_pdu(self, pdu):
         '''
@@ -92,6 +95,101 @@ class TagtCache(List):
         return ret
 
 
+    def _handle_read_no_buff(self, conn, req, cmd):
+        if cmd:
+                rsp = PDU()
+                ScsiRsp(conn, req, rsp, cmd.status, 0)
+                rsp.data = b''
+                #
+                # sense valid, set sense data
+                #
+                if cmd.status != SAM_STAT_GOOD:
+                    if cmd.sense:
+                        rsp.data = cmd.sense
+                        rsp.set_data_len(len(rsp.data))
+                conn.send(rsp)
+                cmd.state = SCSI_TASK_FREE
+
+    def _handle_read_buff(self, conn, req, cmd, cmdsn , buf):
+        if cmd:
+            if buf:
+                spdtl = len(buf)
+                edtl = req.get_exp_len()
+                alloc = ALLOCATE_LEN(cmd.cdb)
+                if alloc >= 0:
+                    spdtl = min(alloc, spdtl)
+                residual = edtl - spdtl
+                length = min(edtl, spdtl, MBL_VAL(conn))
+                limit = conn.PerMaxRecvDataSegmentLength.value
+                offset = 0
+
+                # if cmd status is not SAM_STAT_GOOD,
+                # finial data pdu do not contain scsi status
+                status = (cmd.status == SAM_STAT_GOOD)
+
+                # task management can about scsk task, and set
+                # cmd.state to SCSI_TASK_FREE.
+                while (length > 0):
+                    rsp = PDU()
+                    pdu_len = min(length, limit)
+                    DataIn(conn, req, rsp, buf[offset:offset+pdu_len], length<=limit, offset, residual, status)
+                    #print("Passed ExpCmdSn:" +str(cmdsn)+ "PDU ExpCmdSn: " + str(rsp.get_exp_cmdsn()))
+                    conn.send(rsp)
+                    offset += pdu_len
+                    length -= pdu_len
+                #print("Read cmdsn " + str(cmdsn) + " result sent")
+
+    def _handle_read(self, conn, req, cmd, cmdsn):
+        try:
+            exe_scsi_cmd(cmd)
+            buf = cmd.out_buf
+            #print("Read cmdsn " + str(cmdsn) + " complete")
+            self.read_pending_list.append((conn, req, cmd, cmdsn , buf))
+            return True
+        except:
+            DBG_EXC()
+        return False
+
+    def _wait_pending_ready(self):
+        for op in self.read_pending_list:
+            buf = op[4]
+            if isinstance(buf, DelayedBuffer):
+                buf_list = [x[4] for x in self.read_pending_list if isinstance(x[4], DelayedBuffer)]
+                buf.wait_for_one(buf_list)
+                break
+            
+
+    def process_async_read_requests(self , wait=False):
+        while 1:
+            ready_list = list()
+            for op in self.read_pending_list:
+                buf = op[4]
+                error = False
+                if buf:
+                    if not isinstance(buf, DelayedBuffer) or buf.check():
+                        ready_list.append(op)
+                        if not isinstance(buf, DelayedBuffer) or buf.error_code() == 0:
+                            self._handle_read_buff(op[0], op[1], op[2] , op[3] , op[4])
+                        else:
+                            error = True
+                            cmd.status = SAM_STAT_CHECK_CONDITION
+                if not buf or error:
+                    ready_list.append(op)
+                    self._handle_read_no_buff(op[0], op[1], op[2])
+
+            for op in ready_list:
+                self.read_pending_list.remove(op)
+            
+            if wait:
+                if len(self.read_pending_list) > 0:
+                    self._wait_pending_ready()
+                else:
+                    break
+            else:
+                break
+            
+            #print("Read list size " + str(len(self.read_ready_list)))
+
     def cmd_request(self, conn, req):
         '''
         process iscsi I/O command request
@@ -113,39 +211,11 @@ class TagtCache(List):
         # reading command task
         #
         if IS_IN_IOCMD(cmd.cdb[0]):
-            exe_scsi_cmd(cmd)
-            buf = cmd.out_buf
-            if buf:
-                spdtl = len(buf)
-                edtl = req.get_exp_len()
-                alloc = ALLOCATE_LEN(cmd.cdb)
-                if alloc >= 0:
-                    spdtl = min(alloc, spdtl)
-                residual = edtl - spdtl
-                length = min(edtl, spdtl, MBL_VAL(conn))
-                limit = conn.PerMaxRecvDataSegmentLength.value
-                offset = 0
-
-                # if cmd status is not SAM_STAT_GOOD,
-                # finial data pdu do not contain scsi status
-                status = (cmd.status == SAM_STAT_GOOD)
-
-                # task management can about scsk task, and set
-                # cmd.state to SCSI_TASK_FREE.
-                while (length > 0 and cmd.state != SCSI_TASK_FREE):
-                    rsp = PDU()
-                    pdu_len = min(length, limit)
-                    DataIn(conn, req, rsp, buf[offset:offset+pdu_len], length<=limit, offset, residual, status)
-                    conn.send(rsp)
-                    offset += pdu_len
-                    length -= pdu_len
-
-                # if cmd status is not SAM_STAT_GOOD,
-                # scsi response will be send at the following code.
-                if cmd.status == SAM_STAT_GOOD and len(buf) > 0:
-                    cmd.state = SCSI_TASK_FREE
-                    return cmd
-
+            if self._handle_read(conn, req, cmd, conn.CurExpCmdSn):
+                    if cmd.status == SAM_STAT_GOOD:
+                        cmd.state = SCSI_TASK_FREE
+                        return cmd
+            # read data happens on an outer call to process_async_read_requests()
         #
         # writing command task
         #

@@ -8,6 +8,8 @@
 
 import os, struct
 from string import *
+import array
+import string
 
 def do_pack(ary):
     return struct.pack('B'*len(ary), *ary[:])
@@ -73,6 +75,8 @@ def array_2_hex(arry, offset, len):
     ''' 
     array to hex
     '''
+    if len == 4:
+        return (int(arry[offset]) << 24) + (int(arry[offset+1]) << 16) + (int(arry[offset+2]) << 8) + int(arry[offset+3]) 
     val = arry[offset]
     for i in arry[offset + 1: offset + len]:
         val = val * 0x100 + i
@@ -82,6 +86,11 @@ def hex_2_array(val, size):
     '''
     hex to array
     '''
+    if size == 4:
+        return [(val >> 24) & 0xFF, (val >> 16) & 0xFF, (val >> 8) & 0xFF , (val) & 0xFF] 
+    if size == 2:
+        return [(val >> 8) & 0xFF , (val) & 0xFF] 
+
     lst = []
     while val > 0:
         lst.append(val % 0x100)
@@ -116,5 +125,27 @@ def align4(val):
     if val & 0x03: return (4 - val & 0x03)
     return 0
 
-def asc(str):
-    return str.encode('ascii','ignore')
+def asc(string):
+    return string
+
+
+DIGITS = string.digits + string.ascii_lowercase
+VALUES = {c: d for d, c in enumerate(DIGITS)}
+
+def isdigit(s, base=10):
+    return s in DIGITS[:base]
+
+def atoi(x : str, base : int = 10):
+    if not 2 <= base <= 36:
+        raise ValueError("Only 2 <= base <= 36 currently supported")
+    sign = 1
+    if x.startswith(("+", "-")):
+        if x[0] == "-":
+            sign = -1
+        x = x[1:]
+    value = 0
+    for exp, c in enumerate(reversed(x)):
+        if c not in VALUES or VALUES[c] >= base:
+            raise ValueError(f"{c} is not a valid digit in base {base}")
+        value += VALUES[c] * base ** exp
+    return sign * value

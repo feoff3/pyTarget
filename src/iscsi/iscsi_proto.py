@@ -196,6 +196,6 @@ def ISCSI_DESC(code):
     @param code: iscsi opcode
     @return: string of descriptor
     '''
-    if __ISCSI_CODE_DESCRIPTOR.has_key(code):
+    if code in __ISCSI_CODE_DESCRIPTOR:
         return __ISCSI_CODE_DESCRIPTOR[code]
     return 'Unknown iscsi opcode'

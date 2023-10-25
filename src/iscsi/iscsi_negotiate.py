@@ -313,7 +313,7 @@ def new_key(key):
     Create a iscsi text key
     '''
     import copy
-    if ISCSI_KEY_PAIR.has_key(key):
+    if key in ISCSI_KEY_PAIR:
         return copy.deepcopy(ISCSI_KEY_PAIR[key])
     return None
 

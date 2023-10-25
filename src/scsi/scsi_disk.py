@@ -26,12 +26,15 @@ class Disk(Lun):
         self.sector_size = logic_sector
         self.physical_sector_size = phys_sector
         self.__defect_list_init()
+        self.total_size_cached = self.dev.size()
 
 
-    def get_capacity(self):
+    def get_capacity(self, force_upd = True):
         if self.default_capacity:
-            return self.default_capacity
-        return self.dev.size() / self.sector_size
+            return int(self.default_capacity)
+        if force_upd == True:
+            self.total_size_cached = self.dev.size() / self.sector_size
+        return int(self.total_size_cached)
 
     capacity = property(get_capacity)
 
@@ -51,7 +54,7 @@ class Disk(Lun):
         '''
         check if address out of range.
         '''
-        return (lba + len > self.capacity)
+        return (lba + len > self.get_capacity(False))
 
 
     def initial(self, force=False):
@@ -60,12 +63,12 @@ class Disk(Lun):
         @param force: force to initialize disk
         @return: True for success, False for failed
         '''
-        if force or self.dev.size() < (long(self.capacity) * self.sector_size):
+        if force or self.dev.size() < (int(self.capacity) * self.sector_size):
             #TODO: now it works for files, fix that for non-expandable devices
-            buf = '\x00' * self.sector_size
-            i = long(0)
+            buf = b'\x00' * self.sector_size
+            i = int(0)
             while i < self.capacity + 1:
-                if self.dev.write(long(i) * self.sector_size, buf) == False: 
+                if self.dev.write(int(i) * self.sector_size, buf) == False: 
                     return False
                 i = i + 1
         DBG_PRN('Disk(%s)' % self.path, ': initialize finish!')
@@ -92,7 +95,7 @@ class Disk(Lun):
             ret = False
         else:
             self.lock()
-            ret = self.dev.write(long(lba) * self.sector_size, buf)
+            ret = self.dev.write(int(lba) * self.sector_size, buf)
             self.unlock()
             if not ret:
                 tio.set_sense(MEDIUM_ERROR, 0x0C00)
@@ -112,8 +115,8 @@ class Disk(Lun):
             tio.set_sense(ILLEGAL_REQUEST, 0x2400)
             DBG_WRN('disk(%s) read FAILED, overflow(offset=%d, length=%d, cap=%d)' % (self.path, lba, nr, self.capacity))
             return False
-        self.lock()
-        tio.buffer = self.dev.read(long(lba) * self.sector_size, nr*self.sector_size)
+        self.lock() 
+        tio.buffer = self.dev.read(int(lba) * self.sector_size, nr*self.sector_size)
         if not tio.buffer:
             tio.set_sense(MEDIUM_ERROR, 0x1100)
             DBG_WRN('disk(%s) read FAILED(offset=%d, length=%d, cap=%d)' % (self.path, lba, nr, self.capacity))
